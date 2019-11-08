@@ -2,9 +2,8 @@
 
 [Open Issues](https://sigscale.atlassian.net/projects/USE/issues/?filter=allopenissues "Open Issues")  
 
-UseKeeper provides a storage and reporting service for usage records (e.g. "CDR").
-
-It as a Component in the [TM Forum](https://www.tmforum.org)
+UseKeeper provides a storage and reporting service for usage records (e.g. "CDR")
+as a Component in the [TM Forum](https://www.tmforum.org)
 Open Digital Architecture ([ODA](https://www.tmforum.org/oda/ODA)).
 
 ### Graphical User Interface (GUI)
