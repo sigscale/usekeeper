@@ -1,0 +1,10 @@
+{application, %APP_NAME%,
+	[{description, "SigScale UseKeeper"},
+		{vsn, "%APP_VERSION%"},
+		{modules, [usekeeper_app,
+				usekeeper_sup,
+				usekeeper]},
+		{registered, [usekeeper]},
+		{applications, [mnesia, inets]},
+		{env, []},
+		{mod, {usekeeper_app, []}}]}.

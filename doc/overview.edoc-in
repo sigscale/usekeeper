@@ -1,0 +1,244 @@
+@copyright 2019 SigScale Global Inc.
+@version %VERSION%
+@title %DESCRIPTION%
+@doc This application implements usage management as a TMF Forum ODA component.
+
+==Introduction==
+
+==Installation==
+Before starting the application for the first time, {@link //mnesia/mnesia. mnesia}
+should be initialized. Create a schema and start mnesia on all nodes
+where the application {@link //usekeeper. usekeeper} application will run.
+
+The following command will initialize {@link //usekeeper. usekeeper}
+on the current node and create a default REST user
+"admin" with password "admin".
+
+e.g &#058;
+ 	```
+	(usekeeper@h)1> usekeeper_app:install().
+	{ok, [httpd_group, httpd_user, use_spec, usage]}
+	'''
+
+===HTTP Authentication===
+To use the {@link //inets/mod_auth. mod_auth} module for authentication
+you should create necessary users in the {@link //mnesia/mnesia. mnesia}
+tables it uses. All users will be added to groups specified in `require_group'
+option in inets httpd confifuration.
+e.g &#058;
+	```
+	1> usekeeper:add_user("john", "g2k7hyeh6qa").
+	{ok,{1501829429047,149}}
+	2> usekeeper:add_user("bss", "nfc9xgp32xha").
+	{ok,{1501829458220,157}}
+
+	'''
+
+==Operation==
+
+==REST API==
+The {@link //usekeeper. usekeeper} application provides a
+<a href="http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">RESTful</a>
+API built on the <a href="http://tools.ietf.org/html/rfc2616">HTTP</a> protocol
+and using <a href="http://tools.ietf.org/html/rfc4627">JSON</a> data encoding.
+
+The following <a href="https://www.tmforum.org/open-apis/">TM Forum Open APIs</a>
+are used:
+
+<p><table id="mt">
+   <thead>
+      <tr id="mt">
+         <th id="mt">Document Number</th>
+         <th id="mt">TM Forum Open API</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr id="mt">
+         <td id="mt">TMF635</td>
+         <td id="mt">Usage Management</td>
+      </tr>
+   </tbody>
+</table></p>
+
+===HTTP Methods===
+The <a href="http://tools.ietf.org/html/rfc2616">HTTP</a> methods used in
+this API include
+<a href="http://tools.ietf.org/html/rfc2616#section-9.3">`GET'</a>,
+<a href="http://tools.ietf.org/html/rfc2616#section-9.5">`POST'</a>,
+<a href="https://tools.ietf.org/html/rfc2068#section-19.6.1">`PATCH'</a> and
+<a href="http://tools.ietf.org/html/rfc2616#section-9.7">`DELETE'</a>.
+
+===Media Types===
+The media types used in this application are described below.
+
+<p><table id="mt">
+   <thead>
+      <tr id="mt">
+         <th id="mt">Type Name</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr id="mt">
+         <td id="mt"><a href="http://tools.ietf.org/html/rfc4627">application/json</a></td>
+      </tr>
+   </tbody>
+</table></p>
+
+===Resources &amp; Operations===
+The resources, their URIs, the methods available on them and expected
+responses, are described in this section.  Only the headers, and responses,
+relevant to the function being described are included.  Any valid HTTP
+headers may be included in requests and responses.
+
+<p><table>
+   <caption class="op"><b>Operations</b></caption>
+   <tbody>
+      <tr>
+         <td><a href="#Get-User">Get a User</a></td>
+      </tr>
+      <tr>
+         <td><a href="#Get-Users">Get all Users</a></td>
+      </tr>
+      <tr>
+         <td><a href="#Get-Specs">Get all Usage Specifications</a></td>
+      </tr>
+   </tbody>
+</table></p>
+
+
+<table id="Get-User" class="op">
+   <caption class="op"><b>Get user</b></caption>
+   <tr class="op">
+      <td id="opl">Resource URI</td>
+      <td id="opr">/partyManagement/v4/individual/{id}</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Request Methods</td>
+      <td id="opr">Get</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Request Headers</td>
+      <td id="opr">Accept</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Request Message Body</td>
+      <td id="opr">none</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Response Headers</td>
+      <td id="opr">Location, Content-Type, Content-Length, Etag</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Response Body</td>
+      <td id="opr">Representation of party entity</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Response Status</td>
+      <td id="opr">200 OK, 404 Not Found</td>
+   </tr>
+</table>
+<p>Example request:<pre>
+GET /partyManagement/v4/individual/{id}
+Accept: application/json
+</pre></p>
+<p>Example response:<pre>
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 184
+
+[
+ {
+  "id": "admin",
+  "href": "/partyManagement/v4/individual/admin",
+  "characteristic": [
+                     {
+                      "value": "admin",
+                      "name": "username"
+                     },
+                     {
+                      "value": "admin",
+                      "name": "password"
+                     }
+                   ],
+ }
+]
+</pre></p>
+
+<table id="Get-Users" class="op">
+   <caption class="op"><b>Get all users</b></caption>
+   <tr class="op">
+      <td id="opl">Resource URI</td>
+      <td id="opr">/partyManagement/v4/individual</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Request Methods</td>
+      <td id="opr">Get</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Request Headers</td>
+      <td id="opr">Accept</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Request Message Body</td>
+      <td id="opr">none</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Response Headers</td>
+      <td id="opr">Location, Content-Type, Content-Length, Etag</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Response Body</td>
+      <td id="opr">Representation of party collection</td>
+   </tr>
+   <tr class="op">
+      <td id="opl">Response Status</td>
+      <td id="opr">200 OK, 404 Not Found</td>
+   </tr>
+</table>
+<p>Example request:<pre>
+GET /partyManagement/v4/individual
+Accept: application/json
+</pre></p>
+<p>Example response:<pre>
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 552
+
+[
+ {
+  "id": "admin",
+  "href": "/partyManagement/v1/individual/admin",
+  "characteristic": [
+                     {
+                      "value": "admin",
+                      "name": "username"
+                     },
+                     {
+                      "value": "admin",
+                      "name": "password"
+                     }
+                   ],
+ }
+ {
+  "id": "sigscale",
+  "href": "/partyManagement/v1/individual/sigscale",
+  "characteristic": [
+                     {
+                      "value": "en",
+                      "name": "locale"
+                     },
+                     {
+                      "value": "sigscale",
+                      "name": "username"
+                     },
+                     {
+                      "value": "bucky",
+                      "name": "password"
+                     }
+                   ],
+ }
+]
+</pre></p>
+
+==Configuration==
+
