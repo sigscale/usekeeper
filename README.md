@@ -22,7 +22,7 @@ web components for
 provides simple guided management of Usage Specifications and paginated filtered
 views of Usage records.
 
-#### [Erlang](http://www.erlang.org)
+#### [Erlang/OTP](http://www.erlang.org)
 All operations may be performed using the Erlang public API, either manually
 on the command line [shell](http://erlang.org/doc/man/shell.html), or through
 custom Erlang module development.
