@@ -14,7 +14,7 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Test suite for the public API of the
+%%% Test suite for the REST API of the
 %%% {@link //usekeeper. usekeeper} application.
 %%%
 -module(usekeeper_rest_SUITE).
