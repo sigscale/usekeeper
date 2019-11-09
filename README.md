@@ -15,9 +15,8 @@ UseKeeper's core function exposes the [TM Forum](https://www.tmforum.org)
 Users may create Usage Specications which describe individual Usage types.
 Individual Usages may be created and reported on afterwards.
 
-### Graphical User Interface (GUI)
-A web front end built with Google [Polymer](https://www.polymer-project.org)
-web components for
+### [Web Components](https://www.webcomponents.org/)
+A web frontend built with Google [Polymer](https://www.polymer-project.org) for
 [material design](https://material.io/guidelines/material-design/introduction.html) 
 provides simple guided management of Usage Specifications and paginated filtered
 views of Usage records.
