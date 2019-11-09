@@ -24,3 +24,5 @@ config.sub
 priv/www/node_modules
 priv/www/package-lock.json
 
+# generated
+priv/www/src/usekeeper-help.js
