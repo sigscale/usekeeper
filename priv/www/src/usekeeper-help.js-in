@@ -36,7 +36,7 @@ class ukHelp extends PolymerElement {
 					<paper-icon-button
 						icon="my-icons:call">
 					</paper-icon-button>
-					<a href="tel:+639208370397">+639208370397/a>
+					<a href="tel:+639208370397">+639208370397</a>
 				</div>
 				<div>
 					<paper-icon-button
