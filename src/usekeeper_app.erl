@@ -57,7 +57,7 @@
 %% @see //kernel/application:start/2
 %%
 start(normal = _StartType, _Args) ->
-	Tables = [alarm],
+	Tables = [use_spec, usage],
 	case mnesia:wait_for_tables(Tables, 60000) of
 		ok ->
 			start2();
