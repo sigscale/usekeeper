@@ -9,6 +9,7 @@ EXTRA_DIST = usekeeper.app
 
 beam_DATA = usekeeper_app.beam \
 			usekeeper_sup.beam \
+			usekeeper_server.beam \
 			usekeeper.beam
 
 %.beam:$(top_srcdir)/src/%.erl	$(top_srcdir)/include/usage.hrl
