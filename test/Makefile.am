@@ -7,6 +7,7 @@ CERT_DIR = usekeeper_rest_SUITE_data
 
 testmods = usekeeper_api_SUITE \
 		usekeeper_rest_SUITE \
+		usekeeper_log_SUITE \
 		usekeeper_test_lib
 
 check_DATA = .dialyzer_ok .common_test_ok
