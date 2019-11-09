@@ -46,6 +46,7 @@ init([] = _Args) ->
 %%  internal functions
 %%----------------------------------------------------------------------
 
+-dialyzer({[no_unused], supervisor/3}).
 -spec supervisor(StartMod, RegName, Args) -> Result
 	when
 		StartMod :: atom(),
@@ -76,6 +77,7 @@ server(StartMod, Args) ->
 	StartFunc = {gen_server, start_link, StartArgs},
 	{StartMod, StartFunc, permanent, 4000, worker, [StartMod]}.
 
+-dialyzer({[no_unused], event/1}).
 -spec event(StartMod) -> Result
 	when
 		StartMod :: atom(),
@@ -89,6 +91,7 @@ event(StartMod) ->
 	StartFunc = {gen_event, start_link, StartArgs},
 	{StartMod, StartFunc, permanent, 4000, worker, [StartMod]}.
 
+-dialyzer({[no_unused], fsm/2}).
 -spec fsm(StartMod, Args) -> Result
 	when
 		StartMod :: atom(),
