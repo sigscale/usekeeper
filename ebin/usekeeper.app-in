@@ -3,6 +3,7 @@
 		{vsn, "%APP_VERSION%"},
 		{modules, [usekeeper_app,
 				usekeeper_sup,
+				usekeeper_server,
 				usekeeper]},
 		{registered, [usekeeper]},
 		{applications, [mnesia, inets]},
