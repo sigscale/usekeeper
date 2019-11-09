@@ -88,7 +88,7 @@ start2() ->
 start3() ->
 	case inets:services_info() of
 		ServicesInfo when is_list(ServicesInfo) ->
-			{ok, Profile} = application:get_env(im_profile),
+			{ok, Profile} = application:get_env(hub_profile),
 			start4(Profile, ServicesInfo);
 		{error, Reason} ->
 			{error, Reason}
@@ -112,41 +112,6 @@ start4(Profile, []) ->
 	end.
 %% @hidden
 start5(Profile) ->
-	{ok, Options} = application:get_env(im_options),
-	case httpc:set_options(Options, Profile) of
-		ok ->
-			start6();
-		{error, Reason} ->
-			{error, Reason}
-	end.
-%% @hidden
-start6() ->
-	case inets:services_info() of
-		ServicesInfo when is_list(ServicesInfo) ->
-			{ok, Profile} = application:get_env(hub_profile),
-			start7(Profile, ServicesInfo);
-		{error, Reason} ->
-			{error, Reason}
-	end.
-%% @hidden
-start7(Profile, [{httpc, _Pid, Info} | T]) ->
-	case proplists:lookup(profile, Info) of
-		{profile, Profile} ->
-			start8(Profile);
-		_ ->
-			start7(Profile, T)
-	end;
-start7(Profile, [_ | T]) ->
-	start7(Profile, T);
-start7(Profile, []) ->
-	case inets:start(httpc, [{profile, Profile}]) of
-		{ok, _Pid} ->
-			start8(Profile);
-		{error, Reason} ->
-			{error, Reason}
-	end.
-%% @hidden
-start8(Profile) ->
 	{ok, Options} = application:get_env(hub_options),
 	case httpc:set_options(Options, Profile) of
 		ok ->
