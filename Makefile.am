@@ -10,7 +10,7 @@ release: $(PACKAGE_VERSION).tar.gz
 $(PACKAGE_VERSION).rel:	$(PACKAGE_NAME).rel
 	cp $(PACKAGE_NAME).rel $(PACKAGE_VERSION).rel
 
-$(PACKAGE_VERSION).tar.gz: $(PACKAGE_VERSION).rel sys.config
+$(PACKAGE_VERSION).tar.gz: $(PACKAGE_VERSION).rel sys.config $(top_builddir)/ebin/$(PACKAGE_NAME).app
 	$(ERL) -noinput \
 		-eval "systools:make_script(\"$(PACKAGE_VERSION)\")" \
 		-eval "systools:make_tar(\"$(PACKAGE_VERSION)\", [{dirs, [include]}])" \
