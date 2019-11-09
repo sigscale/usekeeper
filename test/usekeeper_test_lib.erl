@@ -18,7 +18,7 @@ initialize_db() ->
 					initialize_db()
 			end;
 		yes ->
-			Tables = [httpd_group,httpd_user,use_spec,usage],
+			Tables = [httpd_group, httpd_user, use_spec],
 			case mnesia:wait_for_tables(Tables, 1000) of
 				{timeout, _} ->
 					ok = application:stop(mnesia),

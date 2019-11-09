@@ -17,7 +17,7 @@ on the current node and create a default REST user
 e.g &#058;
  	```
 	(usekeeper@h)1> usekeeper_app:install().
-	{ok, [httpd_group, httpd_user, use_spec, usage]}
+	{ok, [httpd_group, httpd_user, use_spec]}
 	'''
 
 ===HTTP Authentication===
