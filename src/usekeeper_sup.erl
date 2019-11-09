@@ -39,7 +39,7 @@
 %% @private
 %%
 init([] = _Args) ->
-	ChildSpecs = [server(usekeeper_server, [self()])],
+	ChildSpecs = [server({local, usekeeper}, usekeeper_server, [self()])],
 	{ok, {{one_for_one, 10, 60}, ChildSpecs}}.
 
 %%----------------------------------------------------------------------
@@ -63,8 +63,9 @@ supervisor(StartMod, RegName, Args) ->
 	StartFunc = {supervisor, start_link, StartArgs},
 	{StartMod, StartFunc, permanent, infinity, supervisor, [StartMod]}.
 
--spec server(StartMod, Args) -> Result
+-spec server(ServerName, StartMod, Args) -> Result
 	when
+		ServerName :: {local, Name :: atom()} | {global, GlobalName :: term()},
 		StartMod :: atom(),
 		Args :: [term()],
 		Result :: supervisor:child_spec().
@@ -72,8 +73,8 @@ supervisor(StartMod, RegName, Args) ->
 %% 	{@link //stdlib/gen_server. gen_server} behaviour.
 %% @private
 %%
-server(StartMod, Args) ->
-	StartArgs = [{local, usekeeper}, StartMod, Args, []],
+server(ServerName, StartMod, Args) ->
+	StartArgs = [ServerName, StartMod, Args, []],
 	StartFunc = {gen_server, start_link, StartArgs},
 	{StartMod, StartFunc, permanent, 4000, worker, [StartMod]}.
 
