@@ -1,7 +1,7 @@
 # [SigScale](http://www.sigscale.org) UseKeeper
 
 [Open Issues](https://sigscale.atlassian.net/projects/USE/issues/?filter=allopenissues "Open Issues")  
-[Create Issue](https://sigscale.atlassian.net/secure/CreateIssue!default.jspa?pid=10307&issuetype=10000 "Create Issue")
+[Create Issue](https://sigscale.atlassian.net/secure/CreateIssue!default.jspa?pid=10308&issuetype=10000 "Create Issue")
 
 UseKeeper provides a storage and reporting service for usage records (e.g. "CDR")
 as a Component in the [TM Forum](https://www.tmforum.org)
