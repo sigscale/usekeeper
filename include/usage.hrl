@@ -72,7 +72,7 @@
 		schema :: string() | undefined,
 		start_date :: pos_integer() | undefined,
 		end_date :: pos_integer() | undefined,
-		last_modified :: {TS :: pos_integer(), N :: pos_integer()},
+		last_modified :: {TS :: pos_integer(), N :: pos_integer()} | undefined,
 		characteristic = [] :: [specification_char()]}).
 -type use_spec() :: #use_spec{}.
 
