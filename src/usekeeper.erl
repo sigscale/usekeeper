@@ -22,13 +22,16 @@
 -copyright('Copyright (c) 2019 SigScale Global Inc.').
 
 %% export the usekeeper public API
--export([add_user/2, list_users/0, get_user/1, delete_user/1]).
+-export([add_user/2, list_users/0, get_user/1, delete_user/1,
+	add_usage_spec/1]).
 
 %% export the usekeeper private API
 -export([]).
 
 -include("usage.hrl").
 -include_lib("inets/include/mod_auth.hrl").
+
+-define(MILLISECOND, millisecond).
 
 %%----------------------------------------------------------------------
 %%  The usekeeper public API
@@ -136,6 +139,26 @@ delete_user3(true) ->
 delete_user3({error, Reason}) ->
 	{error, Reason}.
 
+-spec add_usage_spec(UsageSpec) -> Result
+   when
+      Result :: {ok, UsageSpec} | {error, Reason},
+		UsageSpec :: use_spec(),
+      Reason :: term().
+%% @doc Create a new usage spec.
+add_usage_spec(#use_spec{id = undefined,
+		last_modified = undefined} = UsageSpec) ->
+	F = fun() ->
+			{Id, LM} = unique(),
+			NewUsageSpec = UsageSpec#use_spec{id = Id, last_modified = LM},
+			ok = mnesia:write(NewUsageSpec),
+			NewUsageSpec	
+	end,
+	case mnesia:transaction(F) of
+		{aborted, Reason} ->
+			{error, Reason};
+		{atomic, NewUsageSpec} ->
+			{ok, NewUsageSpec}
+	end.
 
 %%----------------------------------------------------------------------
 %%  internal functions
@@ -185,3 +208,17 @@ get_params5(Address, Port, Directory, {require_group, [Group | _]}) ->
 get_params5(_, _, _, false) ->
 	{error, httpd_group_undefined}.
 
+-spec unique() -> Result
+	when
+		Result :: {ID, LM},
+		ID :: string(),
+		LM :: {TS, N},
+		TS :: pos_integer(),
+		N :: pos_integer().
+%% @doc Generate a unique identifier and timestamp.
+unique() ->
+	TS = erlang:system_time(?MILLISECOND),
+	N = erlang:unique_integer([positive]),
+	ID = integer_to_list(TS) ++ integer_to_list(N),
+	LM = {TS, N},
+	{ID, LM}.
