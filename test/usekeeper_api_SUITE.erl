@@ -77,7 +77,7 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[add_user, get_user, list_users, delete_user].
+	[add_user, get_user, list_users, delete_user, add_usage_spec].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -136,6 +136,19 @@ delete_user(_Config) ->
 	{ok, _} = usekeeper:get_user(User),
 	ok = usekeeper:delete_user(User),
 	{error, no_such_user} = usekeeper:get_user(User).
+
+add_usage_spec() ->
+	[{userdata, [{doc, "Create a new usage specification"}]}].
+
+add_usage_spec(_Config) ->
+	Description = random_string(),
+	BaseType = random_string(),
+	UsageSpec = #use_spec{description = Description, base_type = BaseType},
+	{ok, #use_spec{description = Description, base_type = BaseType, id = Id,
+			last_modified = {TS, N}}} = usekeeper:add_usage_spec(UsageSpec),
+	true = is_integer(TS),
+	true = is_integer(N),
+	true = is_list(Id).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
