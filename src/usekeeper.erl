@@ -23,7 +23,7 @@
 
 %% export the usekeeper public API
 -export([add_user/2, list_users/0, get_user/1, delete_user/1,
-		add_usage_spec/1]).
+		add_usage_spec/1, delete_usage_spec/1]).
 
 %% export the usekeeper private API
 -export([]).
@@ -158,6 +158,23 @@ add_usage_spec(#use_spec{id = undefined,
 			{error, Reason};
 		{atomic, NewUsageSpec} ->
 			{ok, NewUsageSpec}
+	end.
+
+-spec delete_usage_spec(UsageSpecId) -> Result
+	when
+		UsageSpecId :: string(),
+		Result :: ok | {error, Reason},
+		Reason :: term().
+%% @doc Delete a usage spec.
+delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
+	F = fun() ->
+			mnesia:delete(use_spec, UsageSpecId, write)
+	end,
+	case mnesia:transaction(F) of
+		{aborted, Reason} ->
+			{error, Reason};
+		{atomic, ok} ->
+			ok
 	end.
 
 %%----------------------------------------------------------------------

@@ -77,7 +77,8 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[add_user, get_user, list_users, delete_user, add_usage_spec].
+	[add_user, get_user, list_users, delete_user,
+			add_usage_spec, delete_usage_spec].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -149,6 +150,25 @@ add_usage_spec(_Config) ->
 	true = is_integer(TS),
 	true = is_integer(N),
 	true = is_list(Id).
+
+delete_usage_spec() ->
+	[{userdata, [{doc, "Delete a specific usage specification"}]}].
+
+delete_usage_spec(_Config) ->
+	Description = random_string(),
+	BaseType = random_string(),
+	UsageSpec = #use_spec{description = Description, base_type = BaseType},
+	{ok, #use_spec{id = Id}} = usekeeper:add_usage_spec(UsageSpec),
+	ok = usekeeper:delete_usage_spec(Id),
+	F = fun() ->
+			mnesia:read(use_spec, Id, read)
+	end,
+	{error, not_found} = case mnesia:transaction(F) of
+		{aborted, Reason} ->
+			{error, Reason};
+		{atomic, []} ->
+			{error, not_found}
+	end.
 
 %%---------------------------------------------------------------------
 %%  Internal functions
