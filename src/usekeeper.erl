@@ -144,7 +144,7 @@ delete_user3({error, Reason}) ->
 		Result :: {ok, UsageSpec} | {error, Reason},
 		UsageSpec :: use_spec(),
 		Reason :: term().
-%% @doc Create a new usage spec.
+%% @doc Create a new Usage Specification.
 add_usage_spec(#use_spec{id = undefined,
 		last_modified = undefined} = UsageSpec) ->
 	F = fun() ->
@@ -165,7 +165,7 @@ add_usage_spec(#use_spec{id = undefined,
 		UsageSpecId :: string(),
 		Result :: ok | {error, Reason},
 		Reason :: term().
-%% @doc Delete a usage spec.
+%% @doc Delete an existing Usage Specification.
 delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
 	F = fun() ->
 			mnesia:delete(use_spec, UsageSpecId, write)
