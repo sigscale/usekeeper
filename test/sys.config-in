@@ -13,6 +13,8 @@
                   mod_auth,
                   mod_responsecontrol,
                   mod_get,
+                  mod_usekeeper_rest_accepted_content,
+                  mod_usekeeper_rest_post,
                   mod_disk_log]},
                {port, %HTTP_PORT%},
                {socket_type, {essl,

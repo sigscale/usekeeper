@@ -10,7 +10,11 @@ EXTRA_DIST = usekeeper.app
 beam_DATA = usekeeper_app.beam \
 			usekeeper_sup.beam \
 			usekeeper_server.beam \
-			usekeeper.beam
+			usekeeper.beam \
+			usekeeper_rest.beam \
+			usekeeper_rest_usage_specification.beam \
+			mod_usekeeper_rest_accepted_content.beam \
+			mod_usekeeper_rest_post.beam
 
 %.beam:$(top_srcdir)/src/%.erl	$(top_srcdir)/include/usage.hrl
 	$(ERLC) $(ERLCFLAGS) -I $(top_srcdir)/include -I $(top_builddir)/include $<
