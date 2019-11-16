@@ -31,8 +31,6 @@
 -include("usage.hrl").
 -include_lib("inets/include/mod_auth.hrl").
 
--define(MILLISECOND, millisecond).
-
 %%----------------------------------------------------------------------
 %%  The usekeeper public API
 %%----------------------------------------------------------------------
@@ -326,8 +324,9 @@ get_params5(_, _, _, false) ->
 		N :: pos_integer().
 %% @doc Generate a unique identifier and timestamp.
 unique() ->
-	TS = erlang:system_time(?MILLISECOND),
+	TS = erlang:system_time(millisecond),
 	N = erlang:unique_integer([positive]),
 	ID = integer_to_list(TS) ++ integer_to_list(N),
 	LM = {TS, N},
 	{ID, LM}.
+
