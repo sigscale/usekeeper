@@ -39,14 +39,15 @@
 	when
 		Username :: string(),
 		Password :: string(),
-		Result :: {ok, LastModified} | {error, Reason},
-		LastModified :: {integer(), integer()},
+		Result :: {ok, {Id, LastModified}} | {error, Reason},
+		Id :: pos_integer(),
+		LastModified :: {pos_integer(), pos_integer()},
 		Reason :: user_exists | term().
 %% @doc Add an HTTP user.
 %%
 %% 	HTTP Basic authentication (RFC7617) is required with
 %% 	`Username' and  `Password' used to construct the
-%% 	`Authorization' header in requests.
+%% 	`Authorization' header in REST requests.
 %%
 add_user(Username, Password) when is_list(Username),
 		is_list(Password) ->
@@ -60,23 +61,23 @@ add_user1(_, _, {error, Reason}) ->
 %% @hidden
 add_user2(Username, Password,
 		Address, Port, Dir, Group, {error, no_such_user}) ->
-	LM = {erlang:system_time(millisecond), erlang:unique_integer([positive])},
-	NewUserData = [{last_modified, LM}],
-	add_user3(Username, Address, Port, Dir, Group, LM,
+	{Id, LM} = unique(),
+	NewUserData = [{id, Id}, {last_modified, LM}],
+	add_user3(Username, Address, Port, Dir, Group, Id, LM,
 			mod_auth:add_user(Username, Password, NewUserData, Address, Port, Dir));
 add_user2(_, _, _, _, _, _, {error, Reason}) ->
 	{error, Reason};
 add_user2(_, _, _, _, _, _, {ok, _}) ->
 	{error, user_exists}.
 %% @hidden
-add_user3(Username, Address, Port, Dir, Group, LM, true) ->
-	add_user4(LM, mod_auth:add_group_member(Group, Username, Address, Port, Dir));
-add_user3(_, _, _, _, _, _, {error, Reason}) ->
+add_user3(Username, Address, Port, Dir, Group, Id, LM, true) ->
+	add_user4(Id, LM, mod_auth:add_group_member(Group, Username, Address, Port, Dir));
+add_user3(_, _, _, _, _, _, _, {error, Reason}) ->
 	{error, Reason}.
 %% @hidden
-add_user4(LM, true) ->
-	{ok, LM};
-add_user4(_, {error, Reason}) ->
+add_user4(Id, LM, true) ->
+	{ok, {Id, LM}};
+add_user4(_, _, {error, Reason}) ->
 	{error, Reason}.
 
 -spec list_users() -> Result
