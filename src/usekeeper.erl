@@ -223,7 +223,7 @@ query_users1(start, Size, [], '_', false) ->
 query_users1(start, Size, [], MatchSpec, false)
 		when is_integer(Size) ->
 	F = fun() ->
-		{mnesia:users(httpd_user, MatchSpec, Size, read), undefined}
+		{mnesia:select(httpd_user, MatchSpec, Size, read), undefined}
 	end,
 	query_users2(mnesia:ets(F), [], false);
 query_users1(start, _Size, Sort, MatchSpec, CountOnly) ->
