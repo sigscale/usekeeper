@@ -201,7 +201,7 @@ delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
 %% 	in `Sort', in order of appearance.
 %%
 %% 	Query selection is controlled by `MatchSpec'. See the
-%% 	{@link /erts. erts} User's Guide for definition of
+%% 	{@link //erts. erts} User's Guide for definition of
 %% 	Match Specifications.
 %%
 %% 	If `CountOnly' is `true' the result list will be empty.
