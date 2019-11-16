@@ -353,7 +353,7 @@ install12(Tables) ->
 			case usekeeper:add_user(Username, Password) of
 				{ok, _} ->
 					error_logger:info_report(["Created a default user",
-							{username, Uername}, {password, Password}]),
+							{username, Username}, {password, Password}]),
 					{ok, Tables};
 				{error, Reason} ->
 					error_logger:error_report(["Failed to creat default user",
