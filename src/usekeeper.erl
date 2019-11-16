@@ -23,7 +23,7 @@
 
 %% export the usekeeper public API
 -export([add_user/2, list_users/0, get_user/1, delete_user/1,
-		query_users/4, query_users/5, add_usage_spec/1, delete_usage_spec/1]).
+		add_usage_spec/1, delete_usage_spec/1, query/6]).
 
 %% export the usekeeper private API
 -export([]).
@@ -176,97 +176,103 @@ delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
 			ok
 	end.
 
--spec query_users(Cont, Size, Sort, MatchSpec) -> Result
+-spec query(Cont, Size, Table, Sort, MatchSpec, CountOnly) -> Result
 	when
 		Cont :: start | any(),
 		Size :: pos_integer() | undefined,
-		Sort :: [integer()] | [],
-		MatchSpec :: ets:match_spec() | '_',
-		Result :: {Cont1, [term()], Total} | {error, Reason},
-		Cont1 :: eof | any(),
-		Total :: non_neg_integer(),
-		Reason :: term().
-%% @doc Query the user table.
-query_users(Cont, Size, Sort, MatchSpec) ->
-	query_users(Cont, Size, Sort, MatchSpec, false).
-
--spec query_users(Cont, Size, Sort, MatchSpec, CountOnly) -> Result
-	when
-		Cont :: start | any(),
-		Size :: pos_integer() | undefined,
-		Sort :: [integer()] | [],
+		Table :: atom(),
+		Sort :: [integer()],
 		MatchSpec :: ets:match_pattern() | '_',
 		CountOnly :: boolean(),
 		Result :: {Cont1, [term()], Total} | {error, Reason},
 		Cont1 :: eof | any(),
 		Total :: non_neg_integer(),
 		Reason :: term().
-%% @doc Query the user table.
+%% @doc Query the `Table'.
 %%
-%%    The result list will be sorted by the record elements listed in `Sort', in order.
-query_users(Cont, undefined, Sort, MatchSpec, CountOnly) ->
-	{ok, Size} = application:get_env(usekeeper, rest_page_size),
-	query_users1(Cont, Size, Sort, MatchSpec, CountOnly);
-query_users(Cont, Size, Sort, MatchSpec, CountOnly) ->
-	query_users1(Cont, Size, Sort, MatchSpec, CountOnly).
+%% 	Provides a generic function to query {@link //mnesia. mnesia}
+%% 	tables with fine grain control over the selection and results.
+%%
+%% 	If `Size' is not `undefined' the Results will be paginated.
+%% 	The next page is returned by providing `Cont' as the value of
+%% 	`Cont1' from the result of the previous call.
+%%
+%%		The result list will be sorted by the record elements listed
+%% 	in `Sort', in order of appearance.
+%%
+%% 	Query selection is controlled by `MatchSpec'. See the
+%% 	{@link /erts. erts} User's Guide for definition of
+%% 	Match Specifications.
+%%
+%% 	If `CountOnly' is `true' the result list will be empty.
+%%
+query(Cont, undefined, Table, Sort, MatchSpec, CountOnly)
+		when is_atom(Table), is_list(Sort), is_boolean(CountOnly) ->
+	{ok, Size} = application:get_env(sigscale_im, rest_page_size),
+	query1(Cont, Size, Table, Sort, MatchSpec, CountOnly);
+query(Cont, Size, Table, Sort, MatchSpec, CountOnly)
+		when is_atom(Table), is_integer(Size),
+		is_list(Sort), is_boolean(CountOnly) ->
+	query1(Cont, Size, Table, Sort, MatchSpec, CountOnly).
 %% @hidden
-query_users1(start, Size, [], '_', true) ->
-	{eof, Size, mnesia:table_info(httpd_user, size)};
-query_users1(start, Size, [], '_', false) ->
-	MatchSpec = [{#httpd_user{_ = '_'}, [], ['$_']}],
+query1(start, Size, Table, [], '_', true) ->
+	{eof, Size, mnesia:table_info(Table, size)};
+query1(start, Size, Table, [], '_', false) ->
+	Arity = mnesia:table_info(Table, arity),
+	MatchHead = erlang:make_tuple(Arity, '_', [{1, Table}]),
+	MatchSpec = [{MatchHead, [], ['$_']}],
 	F = fun() ->
-		{mnesia:select(httpd_user, MatchSpec, Size, read),
-			mnesia:table_info(httpd_user, size)}
+			{mnesia:select(Table, MatchSpec, Size, read),
+					mnesia:table_info(Table, size)}
 	end,
-	query_users2(mnesia:ets(F), [], false);
-query_users1(start, Size, [], MatchSpec, false)
+	query2(mnesia:ets(F), [], false);
+query1(start, Size, Table, [], MatchSpec, false)
 		when is_integer(Size) ->
 	F = fun() ->
-		{mnesia:select(httpd_user, MatchSpec, Size, read), undefined}
+		{mnesia:select(Table, MatchSpec, Size, read), undefined}
 	end,
-	query_users2(mnesia:ets(F), [], false);
-query_users1(start, _Size, Sort, MatchSpec, CountOnly) ->
+	query2(mnesia:ets(F), [], false);
+query1(start, _Size, Table, Sort, MatchSpec, CountOnly) ->
 	F = fun() ->
-		{mnesia:select(httpd_user, MatchSpec, read), undefined}
+		{mnesia:select(Table, MatchSpec, read), undefined}
 	end,
-	query_users2(mnesia:ets(F), Sort, CountOnly);
-query_users1(Cont, _Size, Sort, '_', CountOnly) ->
+	query2(mnesia:ets(F), Sort, CountOnly);
+query1(Cont, _Size, Table, Sort, '_', CountOnly) ->
 	F = fun() ->
-		{mnesia:select(Cont), mnesia:table_info(httpd_user, size)}
+		{mnesia:select(Cont), mnesia:table_info(Table, size)}
 	end,
-	query_users2(mnesia:ets(F), Sort, CountOnly);
-query_users1(Cont, _Size, Sort, _MatchSpec, CountOnly) ->
+	query2(mnesia:ets(F), Sort, CountOnly);
+query1(Cont, _Size, _Table, Sort, _MatchSpec, CountOnly) ->
 	F = fun() ->
 		{mnesia:select(Cont), undefined}
 	end,
-	query_users2(mnesia:ets(F), Sort, CountOnly).
-
+	query2(mnesia:ets(F), Sort, CountOnly).
 %% @hidden
-query_users2({Users, undefined}, _Sort, true)
-		when is_list(Users) ->
-	Total = length(Users),
+query2({Objects, undefined}, _Sort, true)
+		when is_list(Objects) ->
+	Total = length(Objects),
 	{eof, Total, Total};
-query_users2({Users, undefined}, Sort, false)
-		when is_list(Users) ->
-	Total = length(Users),
-	query_users3(eof, Users, Total, lists:reverse(Sort));
-query_users2({{Users, Cont}, Total}, _Sort, true)
+query2({Objects, undefined}, Sort, false)
+		when is_list(Objects) ->
+	Total = length(Objects),
+	query3(eof, Objects, Total, lists:reverse(Sort));
+query2({{Objects, Cont}, Total}, _Sort, true)
 		when is_integer(Total) ->
-	{Cont, length(Users), Total};
-query_users2({{Users, Cont}, Total}, Sort, false) ->
-	query_users3(Cont, Users, Total, lists:reverse(Sort));
-query_users2({'$end_of_table', _Total},
+	{Cont, length(Objects), Total};
+query2({{Objects, Cont}, Total}, Sort, false) ->
+	query3(Cont, Objects, Total, lists:reverse(Sort));
+query2({'$end_of_table', _Total},
 		_Sort, _CountOnly) ->
 	{eof, []}.
 %% @hidden
-query_users3(Cont, Users, Total, [H | T]) when H > 0 ->
-	query_users3(Cont, lists:keysort(H, Users), Total, T);
-query_users3(Cont, Users, Total, [H | T]) when H < 0 ->
-	query_users3(Cont, lists:reverse(lists:keysort(-H, Users)), Total, T);
-query_users3(Cont, Users, undefined, []) ->
-	{Cont, Users};
-query_users3(Cont, Users, Total, []) ->
-	{Cont, Users, Total}.
+query3(Cont, Objects, Total, [H | T]) when H > 0 ->
+	query3(Cont, lists:keysort(H, Objects), Total, T);
+query3(Cont, Objects, Total, [H | T]) when H < 0 ->
+	query3(Cont, lists:reverse(lists:keysort(-H, Objects)), Total, T);
+query3(Cont, Objects, undefined, []) ->
+	{Cont, Objects};
+query3(Cont, Objects, Total, []) ->
+	{Cont, Objects, Total}.
 
 %%----------------------------------------------------------------------
 %%  internal functions
