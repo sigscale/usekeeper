@@ -42,6 +42,21 @@
 		Result :: {ok, {Id, LastModified}} | {error, Reason},
 		Id :: pos_integer(),
 		LastModified :: {pos_integer(), pos_integer()},
+		Reason :: term().
+%% @equiv add_user(undefined, undefined, Username, Password)
+add_user(Username, Password) when is_list(Username),
+		is_list(Password) ->
+	add_user(undefined, undefined, Username, Password).
+
+-spec add_user(FirstName, LastName, Username, Password) -> Result
+	when
+		FirstName :: string() | undefined,
+		LastName :: string() | undefined,
+		Username :: string(),
+		Password :: string(),
+		Result :: {ok, {Id, LastModified}} | {error, Reason},
+		Id :: pos_integer(),
+		LastModified :: {pos_integer(), pos_integer()},
 		Reason :: user_exists | term().
 %% @doc Add an HTTP user.
 %%
@@ -49,26 +64,27 @@
 %% 	`Username' and  `Password' used to construct the
 %% 	`Authorization' header in REST requests.
 %%
-add_user(Username, Password) when is_list(Username),
-		is_list(Password) ->
-	add_user1(Username, Password, get_params()).
+add_user(FirstName, LastName, Username, Password)
+		when is_list(FirstName) ->
+	add_user1(LastName, Username, Password, [{givenName, FirstName}]);
+add_user(undefined, LastName, Username, Password) ->
+	add_user1(LastName, Username, Password, []).
 %% @hidden
-add_user1(Username, Password, {Port, Address, Dir, Group}) ->
+add_user1(LastName, Username, Password, UserData)
+		when is_list(LastName) ->
 	add_user2(Username, Password,
-			Address, Port, Dir, Group, usekeeper:get_user(Username));
-add_user1(_, _, {error, Reason}) ->
-	{error, Reason}.
+			[{lastName, LastName} | UserData], get_params());
+add_user1(undefined, Username, Password, UserData) ->
+	add_user2(Username, Password, UserData, get_params()).
 %% @hidden
-add_user2(Username, Password,
-		Address, Port, Dir, Group, {error, no_such_user}) ->
+add_user2(Username, Password, UserData, {Port, Address, Dir, Group})
+		when is_list(Username), is_list(Password) ->
 	{Id, LM} = unique(),
-	NewUserData = [{id, Id}, {last_modified, LM}],
+	NewUserData = [{id, Id}, {last_modified, LM} | UserData],
 	add_user3(Username, Address, Port, Dir, Group, Id, LM,
 			mod_auth:add_user(Username, Password, NewUserData, Address, Port, Dir));
-add_user2(_, _, _, _, _, _, {error, Reason}) ->
-	{error, Reason};
-add_user2(_, _, _, _, _, _, {ok, _}) ->
-	{error, user_exists}.
+add_user2(_, _, _, {error, Reason}) ->
+	{error, Reason}.
 %% @hidden
 add_user3(Username, Address, Port, Dir, Group, Id, LM, true) ->
 	add_user4(Id, LM, mod_auth:add_group_member(Group, Username, Address, Port, Dir));
