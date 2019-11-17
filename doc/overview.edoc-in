@@ -34,8 +34,8 @@ Usage queries.
 ==Installation==
 Before starting the application for the first time,
 {@link //mnesia/mnesia. mnesia} should be initialized. Create a schema
-and start mnesia on all nodes where the application
-{@link //usekeeper. usekeeper} application will run.
+and start mnesia on all nodes where the {@link //usekeeper. usekeeper}
+application will run.
 
 The following command will initialize {@link //usekeeper. usekeeper}
 on the current node and create a default REST user "admin" with password
@@ -383,4 +383,69 @@ ETag: 1573881568128-91
 </pre></p>
 
 ==Configuration==
+The {@link //usekeeper. usekeeper} application is configured using the
+following application environment variables ({@link //kernel/app. app}):
+<dl>
+	<dt>usage_log_dir</dt>
+		<dd>Path of directory to store usage logs.</dd>
+	<dt>usage_log_files</dt>
+		<dd>Number of usage log files.</dd>
+	<dt>usage_log_size</dt>
+		<dd>Size in bytes of usage log files.</dd>
+	<dt>rest_page_size</dt>
+		<dd>Defines the maximum number of items to include in a REST collection response.</dd>
+	<dt>ipdr_dir</dt>
+		<dd>Path of directory to store IPDR files.</dd>
+	<dt>export_dir</dt>
+		<dd>Path of directory to store export files.</dd>
+	<dt>hub_profile</dt>
+		<dd>Name of {@link //inets/httpc. httpc} profile for notifications.</dd>
+	<dt>hub_options</dt>
+		<dd>Profile options for notifications.</dd>
+</dl>
+
+Default application environment variable values may be overidden in the
+system {@link //jkernel/config. config} file (releases/%VERSION%/sys.config).
+===Example sys.config===
+```
+[{usekeeper,
+      [{usage_log_dir, "log/usage"},
+      {usage_log_files, 100},
+      {usage_log_size, 10485760},
+      {rest_page_size, 1000}]},
+{inets,
+      [{services,
+         [{httpd,
+            [{server_name, "uk-1.usekeeper.org"},
+            {directory_index, ["index.html"]},
+            {directory, {"/",
+                  [{auth_type, mnesia},
+                  {auth_name, "usekeeper.org"},
+                  {require_group, ["staff"]}]}},
+            {transfer_disk_log, "log/http/transfer"},
+            {security_disk_log, "log/http/security"},
+            {error_disk_log, "log/http/error"},
+            {transfer_disk_log_size, {10485760, 10}},
+            {security_disk_log_size, {10485760, 10}},
+            {error_disk_log_size, {10485760, 10}},
+            {disk_log_format, internal},
+            {modules, [mod_alias,
+                  mod_auth,
+                  mod_responsecontrol,
+                  mod_usekeeper_rest_accepted_content,
+                  mod_usekeeper_rest_get,
+                  mod_usekeeper_rest_post,
+                  mod_usekeeper_rest_patch,
+                  mod_usekeeper_rest_delete,
+                  mod_get,
+						mod_disk_log]},
+            {port, 8080},
+            {socket_type, ip_comm},
+%           {socket_type, {essl,
+%                 [{certfile,  "ssl/certs/ocs.pem"},
+%                 {keyfile, "ssl/private/ocs.pem"}]}},
+            {server_root, "./"},
+            {alias, {"/doc", "lib/usekeeper-%VERSION%/doc"}},
+            {document_root, "lib/usekeeper-%VERSION%/priv/www"}]}]}]}].
+'''
 
