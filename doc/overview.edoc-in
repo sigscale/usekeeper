@@ -1,9 +1,35 @@
 @copyright 2019 SigScale Global Inc.
 @version %VERSION%
-@title %DESCRIPTION%
-@doc This application implements Usage Management as a TMF Forum ODA component.
+@title UseKeeper  User's Guide
+@doc This application implements Usage Management as a
+<a target="_blank" rel="noopener noreferrer"
+href="http://www.tmforum.org">TM Forum</a>
+<a target="_blank" rel="noopener noreferrer"
+href="http://www.tmforum.org/resources/reference/gb998-open-digital-architecture-oda-concepts-principles-r19-0-0/">ODA</a>
+<a target="_blank" rel="noopener noreferrer"
+href="http://www.tmforum.org/resources/exploratory-report/ig1171-oda-component-definition-r19-0-0/">Component</a>.
 
 ==Introduction==
+UseKeeper manages a collection of product, service or resource usage records.
+
+A usage represents an event that is of interest to billing systems and may
+have charges applied to it. It is comprised of characteristics, which define
+all attributes known for a particular type of usage.  Main usage attributes
+are its identifier, date, type, type related specification, characteristics
+(name and value), status, related parties and rating related information
+(date, amount, taxes, etc.).
+
+The Usage collection is efficiently stored as a chronologically ordered
+{@link //kernel/disk_log. disk_log}. The log is sharded and time range
+queries very efficiently locate the shard with the starting record. Records
+are efficiently filtered using Match Specifications
+({@link //stdlib/ets:match_spec(). match_spec()}) allowing flexible queries
+over very large datasets with reasonable performance.
+
+The Usage Specification collection provides definitions of the characteristics
+and possible values supported by certain types of Usage. These allow for
+structured data storage and may be used to guide the creation of complex
+Usage queries.
 
 ==Installation==
 Before starting the application for the first time,
@@ -36,7 +62,8 @@ e.g &#058;
 
 ==REST API==
 The {@link //usekeeper. usekeeper} application supports the following
-<a href="https://www.tmforum.org/open-apis/">TM Forum Open APIs</a>:
+<a target="_blank" rel="noopener noreferrer"
+href="https://www.tmforum.org/open-apis/">TM Forum Open APIs</a>:
 
 <p><table id="mt">
    <thead>
@@ -47,11 +74,11 @@ The {@link //usekeeper. usekeeper} application supports the following
    </thead>
    <tbody>
       <tr id="mt">
-         <td id="mt"><a href="https://www.tmforum.org/resources/interface/tmf635-usage-management-api-rest-specification-r14-5-0/">TMF635</a></td>
+         <td id="mt"><a target="_blank" rel="noopener noreferrer" href="https://www.tmforum.org/resources/interface/tmf635-usage-management-api-rest-specification-r14-5-0/">TMF635</a></td>
          <td id="mt">Usage Management</td>
       </tr>
       <tr id="mt">
-         <td id="mt"><a href="https://www.tmforum.org/resources/specification/tmf632-party-management-api-rest-specification-r19-0-0/">TMF632</a></td>
+         <td id="mt"><a target="_blank" rel="noopener noreferrer" href="https://www.tmforum.org/resources/specification/tmf632-party-management-api-rest-specification-r19-0-0/">TMF632</a></td>
          <td id="mt">Party Management</td>
       </tr>
    </tbody>
