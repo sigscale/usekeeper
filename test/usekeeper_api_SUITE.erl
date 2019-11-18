@@ -25,7 +25,12 @@
 -export([init_per_suite/1, end_per_suite/1]).
 -export([init_per_testcase/2, end_per_testcase/2]).
 
--compile(export_all).
+%% common_test test cases
+-export([add_user2/0, add_user2/1, add_user4/0, add_user4/1,
+		get_user/0, get_user/1, list_users/0, list_users/1,
+		delete_user/0, delete_user/1,
+		add_usage_spec/0, add_usage_spec/1,
+		delete_usage_spec/0, delete_usage_spec/1]).
 
 -include("usage.hrl").
 -include_lib("common_test/include/ct.hrl").
@@ -77,88 +82,112 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[add_user, get_user, list_users, delete_user,
+	[add_user2, add_user4, get_user, list_users, delete_user,
 			add_usage_spec, delete_usage_spec].
 
 %%---------------------------------------------------------------------
 %%  Test cases
 %%---------------------------------------------------------------------
 
-add_user() ->
-	[{userdata, [{doc, "Create a new HTTP user"}]}].
+add_user2() ->
+	[{userdata, [{doc, "Create a new HTTP user (arity 2"}]}].
 
-add_user(_Config) ->
-	User = random_string(),
+add_user2(_Config) ->
+	Username = random_string(),
 	Password = random_string(),
-	{ok, {TS, N} = LastModified} = usekeeper:add_user(User, Password),
+	{ok, {ID, {TS, N} = LM}} = usekeeper:add_user(Username, Password),
+	true = is_list(ID),
 	true = is_integer(TS),
 	true = is_integer(N),
 	{Port, Address, Dir, _} = get_params(),
-	{ok, #httpd_user{username = User, password = Password,
-			user_data = UserData}} = mod_auth:get_user(User, Address, Port, Dir),
-	{_, LastModified} = lists:keyfind(last_modified, 1, UserData).
+	{ok, #httpd_user{username = Username, password = Password,
+			user_data = UserData}} = mod_auth:get_user(Username, Address, Port, Dir),
+	{_, ID} = lists:keyfind(id, 1, UserData),
+	{_, LM} = lists:keyfind(last_modified, 1, UserData).
+
+add_user4() ->
+	[{userdata, [{doc, "Create a new HTTP user (arity 4"}]}].
+
+add_user4(_Config) ->
+	FirstName = random_string(),
+	LastName = random_string(),
+	Username = random_string(),
+	Password = random_string(),
+	{ok, {ID, {TS, N} = LM}} = usekeeper:add_user(FirstName,
+			LastName, Username, Password),
+	true = is_list(ID),
+	true = is_integer(TS),
+	true = is_integer(N),
+	{Port, Address, Dir, _} = get_params(),
+	{ok, #httpd_user{username = Username, password = Password,
+			user_data = UserData}} = mod_auth:get_user(Username, Address, Port, Dir),
+	{_, ID} = lists:keyfind(id, 1, UserData),
+	{_, FirstName} = lists:keyfind(givenName, 1, UserData),
+	{_, LastName} = lists:keyfind(lastName, 1, UserData),
+	{_, LM} = lists:keyfind(last_modified, 1, UserData).
 
 get_user() ->
 	[{userdata, [{doc, "Look up an HTTP user"}]}].
 
 get_user(_Config) ->
-	User = random_string(),
+	Username = random_string(),
 	Password = random_string(),
-	{ok, {TS, N} = LastModified} = usekeeper:add_user(User, Password),
-	true = is_integer(TS),
-	true = is_integer(N),
-	{ok, #httpd_user{username = User, password = Password,
-			user_data = UserData}} = usekeeper:get_user(User),
-	{_, LastModified} = lists:keyfind(last_modified, 1, UserData).
+	{ok, {ID, LM}} = usekeeper:add_user(Username, Password),
+	{ok, #httpd_user{username = Username, password = Password,
+			user_data = UserData}} = usekeeper:get_user(Username),
+	{_, ID} = lists:keyfind(id, 1, UserData),
+	{_, LM} = lists:keyfind(last_modified, 1, UserData).
 
 list_users() ->
 	[{userdata, [{doc, "List all HTTP users"}]}].
 
 list_users(_Config) ->
-	User1 = random_string(),
-	{ok, _} = usekeeper:add_user(User1, random_string()),
-	User2 = random_string(),
-	{ok, _} = usekeeper:add_user(User2, random_string()),
-	User3 = random_string(),
-	{ok, _} = usekeeper:add_user(User3, random_string()),
-	{ok, Users} =  usekeeper:list_users(),
-	true = lists:all(fun erlang:is_list/1, Users),
-	true = lists:member(User1, Users),
-	true = lists:member(User2, Users),
-	true = lists:member(User3, Users).
+	Username1 = random_string(),
+	{ok, _} = usekeeper:add_user(Username1, random_string()),
+	Username2 = random_string(),
+	{ok, _} = usekeeper:add_user(Username2, random_string()),
+	Username3 = random_string(),
+	{ok, _} = usekeeper:add_user(Username3, random_string()),
+	{ok, Usernames} =  usekeeper:list_users(),
+	true = lists:all(fun erlang:is_list/1, Usernames),
+	true = lists:member(Username1, Usernames),
+	true = lists:member(Username2, Usernames),
+	true = lists:member(Username3, Usernames).
 
 delete_user() ->
 	[{userdata, [{doc, "Remove an HTTP user"}]}].
 
 delete_user(_Config) ->
-	User = random_string(),
+	Username = random_string(),
 	Password = random_string(),
-	{ok, _} = usekeeper:add_user(User, Password),
-	{ok, _} = usekeeper:get_user(User),
-	ok = usekeeper:delete_user(User),
-	{error, no_such_user} = usekeeper:get_user(User).
+	{ok, _} = usekeeper:add_user(Username, Password),
+	{ok, _} = usekeeper:get_user(Username),
+	ok = usekeeper:delete_user(Username),
+	{error, no_such_user} = usekeeper:get_user(Username).
 
 add_usage_spec() ->
 	[{userdata, [{doc, "Create a new usage specification"}]}].
 
 add_usage_spec(_Config) ->
-	Description = random_string(),
-	BaseType = random_string(),
-	UsageSpec = #use_spec{description = Description, base_type = BaseType},
-	{ok, #use_spec{description = Description, base_type = BaseType, id = Id,
+	UsageSpec = usekeeper_test_lib:voice_spec(),
+	{ok, #use_spec{id = Id, name = Name, description = Description,
+			start_date = StartDate, end_date = EndDate,
 			last_modified = {TS, N}}} = usekeeper:add_usage_spec(UsageSpec),
+	true = is_list(Id),
+	true = is_list(Name),
+	true = is_list(Description),
 	true = is_integer(TS),
 	true = is_integer(N),
-	true = is_list(Id).
+	true = is_list(usekeeper_rest:iso8601(StartDate)),
+	true = is_list(usekeeper_rest:iso8601(EndDate)).
 
 delete_usage_spec() ->
 	[{userdata, [{doc, "Delete a specific usage specification"}]}].
 
 delete_usage_spec(_Config) ->
-	Description = random_string(),
-	BaseType = random_string(),
-	UsageSpec = #use_spec{description = Description, base_type = BaseType},
-	{ok, #use_spec{id = Id}} = usekeeper:add_usage_spec(UsageSpec),
+	UsageSpec = usekeeper_test_lib:voice_spec(),
+	UsageSpec1 = UsageSpec#use_spec{name = "DeleteMe"},
+	{ok, #use_spec{id = Id}} = usekeeper:add_usage_spec(UsageSpec1),
 	ok = usekeeper:delete_usage_spec(Id),
 	F = fun() ->
 			mnesia:read(use_spec, Id, read)

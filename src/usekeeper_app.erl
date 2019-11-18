@@ -348,16 +348,16 @@ install11(Tables, false) ->
 install12(Tables) ->
 	case usekeeper:list_users() of
 		{ok, []} ->
-			case usekeeper:add_user("admin", "admin") of
-				{ok, _LastModified} ->
+			Username = "admin",
+			Password = "admin",
+			case usekeeper:add_user(Username, Password) of
+				{ok, _} ->
 					error_logger:info_report(["Created a default user",
-							{username, "admin"}, {password, "admin"},
-							{locale, "en"}]),
+							{username, Username}, {password, Password}]),
 					{ok, Tables};
 				{error, Reason} ->
 					error_logger:error_report(["Failed to creat default user",
-							{username, "admin"}, {password, "admin"},
-							{locale, "en"}]),
+							{username, Username}, {password, Password}]),
 					{error, Reason}
 			end;
 		{ok, Users} ->

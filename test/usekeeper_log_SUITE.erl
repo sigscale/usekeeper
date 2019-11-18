@@ -25,7 +25,8 @@
 -export([init_per_suite/1, end_per_suite/1]).
 -export([init_per_testcase/2, end_per_testcase/2]).
 
--compile(export_all).
+%% common_test test cases
+-export([]).
 
 -include("usage.hrl").
 -include_lib("common_test/include/ct.hrl").
