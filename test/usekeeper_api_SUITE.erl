@@ -169,23 +169,25 @@ add_usage_spec() ->
 	[{userdata, [{doc, "Create a new usage specification"}]}].
 
 add_usage_spec(_Config) ->
-	Description = random_string(),
-	BaseType = random_string(),
-	UsageSpec = #use_spec{description = Description, base_type = BaseType},
-	{ok, #use_spec{description = Description, base_type = BaseType, id = Id,
+	UsageSpec = usekeeper_test_lib:voice_spec(),
+	{ok, #use_spec{id = Id, name = Name, description = Description,
+			start_date = StartDate, end_date = EndDate,
 			last_modified = {TS, N}}} = usekeeper:add_usage_spec(UsageSpec),
+	true = is_list(Id),
+	true = is_list(Name),
+	true = is_list(Description),
 	true = is_integer(TS),
 	true = is_integer(N),
-	true = is_list(Id).
+	true = is_list(usekeeper_rest:iso8601(StartDate)),
+	true = is_list(usekeeper_rest:iso8601(EndDate)).
 
 delete_usage_spec() ->
 	[{userdata, [{doc, "Delete a specific usage specification"}]}].
 
 delete_usage_spec(_Config) ->
-	Description = random_string(),
-	BaseType = random_string(),
-	UsageSpec = #use_spec{description = Description, base_type = BaseType},
-	{ok, #use_spec{id = Id}} = usekeeper:add_usage_spec(UsageSpec),
+	UsageSpec = usekeeper_test_lib:voice_spec(),
+	UsageSpec1 = UsageSpec#use_spec{name = "DeleteMe"},
+	{ok, #use_spec{id = Id}} = usekeeper:add_usage_spec(UsageSpec1),
 	ok = usekeeper:delete_usage_spec(Id),
 	F = fun() ->
 			mnesia:read(use_spec, Id, read)

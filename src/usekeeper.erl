@@ -209,9 +209,10 @@ delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
 %% 	Provides a generic function to query {@link //mnesia. mnesia}
 %% 	tables with fine grain control over the selection and results.
 %%
-%% 	If `Size' is not `undefined' the Results will be paginated.
-%% 	The next page is returned by providing `Cont' as the value of
-%% 	`Cont1' from the result of the previous call.
+%% 	If `Size' is not `undefined' results will be paginated
+%% 	with at most `Size' items per page. The next page is returned
+%% 	by providing `Cont' as the value of `Cont1' from the result
+%% 	of the previous call.
 %%
 %%		The result list will be sorted by the record elements listed
 %% 	in `Sort', in order of appearance.

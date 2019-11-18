@@ -84,7 +84,7 @@ content_type_available(Headers, Uri, Body, Resource, ModData) ->
 	end.
 
 %% @hidden
-do_post(Resource, ModData, Body, ["usageManagement", "v2", "usageSpecification"]) ->
+do_post(Resource, ModData, Body, ["usageManagement", "v4", "usageSpecification"]) ->
 	do_response(ModData, Resource:post_usage_specification(Body)).
 
 %% @hidden
