@@ -22,7 +22,7 @@
 -copyright('Copyright (c) 2019 SigScale Global Inc.').
 
 %% export the usekeeper public API
--export([add_user/2, list_users/0, get_user/1, delete_user/1,
+-export([add_user/2, add_user/4, list_users/0, get_user/1, delete_user/1,
 		add_usage_spec/1, delete_usage_spec/1, query/6]).
 
 %% export the usekeeper private API
@@ -40,7 +40,7 @@
 		Username :: string(),
 		Password :: string(),
 		Result :: {ok, {Id, LastModified}} | {error, Reason},
-		Id :: pos_integer(),
+		Id :: string(),
 		LastModified :: {pos_integer(), pos_integer()},
 		Reason :: term().
 %% @equiv add_user(undefined, undefined, Username, Password)
@@ -55,7 +55,7 @@ add_user(Username, Password) when is_list(Username),
 		Username :: string(),
 		Password :: string(),
 		Result :: {ok, {Id, LastModified}} | {error, Reason},
-		Id :: pos_integer(),
+		Id :: string(),
 		LastModified :: {pos_integer(), pos_integer()},
 		Reason :: user_exists | term().
 %% @doc Add an HTTP user.
@@ -65,9 +65,10 @@ add_user(Username, Password) when is_list(Username),
 %% 	`Authorization' header in REST requests.
 %%
 add_user(FirstName, LastName, Username, Password)
-		when is_list(FirstName) ->
+		when is_list(FirstName), is_list(Username), is_list(Password) ->
 	add_user1(LastName, Username, Password, [{givenName, FirstName}]);
-add_user(undefined, LastName, Username, Password) ->
+add_user(undefined, LastName, Username, Password)
+		when is_list(Username), is_list(Password) ->
 	add_user1(LastName, Username, Password, []).
 %% @hidden
 add_user1(LastName, Username, Password, UserData)
@@ -77,8 +78,7 @@ add_user1(LastName, Username, Password, UserData)
 add_user1(undefined, Username, Password, UserData) ->
 	add_user2(Username, Password, UserData, get_params()).
 %% @hidden
-add_user2(Username, Password, UserData, {Port, Address, Dir, Group})
-		when is_list(Username), is_list(Password) ->
+add_user2(Username, Password, UserData, {Port, Address, Dir, Group}) ->
 	{Id, LM} = unique(),
 	NewUserData = [{id, Id}, {last_modified, LM} | UserData],
 	add_user3(Username, Address, Port, Dir, Group, Id, LM,
