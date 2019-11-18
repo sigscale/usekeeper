@@ -93,6 +93,21 @@ class UseKeeper extends PolymerElement {
 							selected="[[page]]"
 							attr-for-selected="name"
 							role="main">
+						<specification-list
+								id="specList"
+								loading="{{specLoading}}"
+								name="specView">
+						</specification-list>
+						<usage-list
+								id="usageList"
+								loading="{{usageLoading}}"
+								name="usageView">
+						</usage-list>
+						<usekeeper-user-list
+								id="userList"
+								loading="{{userLoading}}"
+								name="userView">
+						</usekeeper-user-list>
 					</iron-pages>
 					<paper-toast
 							id="restError"
@@ -108,6 +123,24 @@ class UseKeeper extends PolymerElement {
 							attr-for-selected="name"
 							class="drawer-list"
 							role="navigation">
+						<a name="specView" href="[[rootPath]]specView">
+								<paper-icon-button
+									icon="my-icons:spec">
+								</paper-icon-button>
+									Specification
+						</a>
+						<a name="usageView" href="[[rootPath]]usageView">
+								<paper-icon-button
+									icon="my-icons:usageIcon">
+								</paper-icon-button>
+									Usage
+						</a>
+						<a name="userView" href="[[rootPath]]userView">
+								<paper-icon-button
+									icon="my-icons:users">
+								</paper-icon-button>
+									User
+						</a>
 					</iron-selector>
 				</app-drawer>
 			</app-drawer-layout>
@@ -119,6 +152,36 @@ class UseKeeper extends PolymerElement {
 	refreshClick() {
 		var grid;
 		switch(this.$.load.selected) {
+			case "specView":
+				var spec = this.shadowRoot.getElementById('specList');
+				if (!spec.loading) {
+					grid = spec.shadowRoot.getElementById('specGrid');
+					grid.size = undefined;
+					grid.clearCache();
+				} else {
+					console.log('Have patience dude!');
+				}
+			break;
+			case "usageView":
+				var usage = this.shadowRoot.getElementById('usageList');
+				if (!usage.loading) {
+					grid = usage.shadowRoot.getElementById('usageGrid');
+					grid.size = undefined;
+					grid.clearCache();
+				} else {
+					console.log('Have patience dude!');
+				}
+			break;
+			case "userView":
+				var user = this.shadowRoot.getElementById('userList');
+				if (!user.loading) {
+					grid = user.shadowRoot.getElementById('userGrid');
+					grid.size = undefined;
+					grid.clearCache();
+				} else {
+					console.log('Have patience dude!');
+				}
+			break;
 		}
 	}
 
@@ -137,6 +200,15 @@ class UseKeeper extends PolymerElement {
 			loading: {
 				type: String,
 				value: false
+			},
+			userLoading: {
+				type: String,
+			},
+			specLoading: {
+				type: String,
+			},
+			usageLoading: {
+				type: String,
 			}
 		};
 	}
@@ -165,6 +237,8 @@ class UseKeeper extends PolymerElement {
 			case 'specView':
 				this.viewTitle = "Usage Specifications";
 				break;
+			case 'userView':
+				this.viewTitle = "Users";
 		}
 		// Close a non-persistent drawer when the page & route are changed.
 		if (!this.$.drawer.persistent) {
@@ -183,6 +257,9 @@ class UseKeeper extends PolymerElement {
 				break;
 			case 'specView':
 				// import('./use-spec-list.js');
+				break;
+			case 'userView':
+				// import('./usekeeper-user-list.js');
 				break;
 		}
 	}
