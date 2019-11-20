@@ -33,6 +33,8 @@
 -include("usage.hrl").
 -include_lib("common_test/include/ct.hrl").
 
+-define(PathUsage, "/usageManagement/v4/").
+
 %%---------------------------------------------------------------------
 %%  Test server callback functions
 %%---------------------------------------------------------------------
@@ -41,7 +43,9 @@
 %% Require variables and set default values for the suite.
 %%
 suite() ->
-	[{timetrap, {minutes, 1}}].
+	[{timetrap, {minutes, 1}},
+	{require, rest_user}, {default_config, rest_user, "ct"},
+	{require, rest_pass}, {default_config, rest_pass, "tag0bpp53wsf"}].
 
 -spec init_per_suite(Config :: [tuple()]) -> Config :: [tuple()].
 %% Initiation before the whole suite.
@@ -49,7 +53,39 @@ suite() ->
 init_per_suite(Config) ->
 	ok = usekeeper_test_lib:initialize_db(),
 	ok = usekeeper_test_lib:start(),
-	Config.
+	{ok, Services} = application:get_env(inets, services),
+	Fport = fun FPort([{httpd, L} | T]) ->
+				case lists:keyfind(server_name, 1, L) of
+					{server_name, "ct.usekeeper.org"} ->
+						H1 = lists:keyfind(bind_address, 1, L),
+						P1 = lists:keyfind(port, 1, L),
+						{H1, P1};
+					_ ->
+						FPort(T)
+				end;
+			FPort([_ | T]) ->
+				FPort(T)
+	end,
+	RestUser = ct:get_config(rest_user),
+	RestPass = ct:get_config(rest_pass),
+	{Host, Port} = case Fport(Services) of
+		{{_, H2}, {_, P2}} when H2 == "localhost"; H2 == {127,0,0,1} ->
+			{ok, _} = usekeeper:add_user(RestUser, RestPass),
+			{"localhost", P2};
+		{{_, H2}, {_, P2}} ->
+			{ok, _} = usekeeper:add_user(RestUser, RestPass),
+			case H2 of
+				H2 when is_tuple(H2) ->
+					{inet:ntoa(H2), P2};
+				H2 when is_list(H2) ->
+					{H2, P2}
+			end;
+		{false, {_, P2}} ->
+			{ok, _} = usekeeper:add_user(RestUser, RestPass),
+			{"localhost", P2}
+	end,
+	HostUrl = "https://" ++ Host ++ ":" ++ integer_to_list(Port),
+	[{host_url, HostUrl}, {port, Port} | Config].
 
 -spec end_per_suite(Config :: [tuple()]) -> any().
 %% Cleanup after the whole suite.
@@ -79,14 +115,91 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[].
+	[post_usage_specification].
 
 %%---------------------------------------------------------------------
 %%  Test cases
 %%---------------------------------------------------------------------
 
+post_usage_specification() ->
+	[{userdata, [{doc, "POST to Resource collection"}]}].
+
+post_usage_specification(Config) ->
+	HostUrl = ?config(host_url, Config),
+	PathUsageSpec = ?PathUsage ++ "usageSpecification",
+	CollectionUrl = HostUrl ++ PathUsageSpec,
+	Name = random_string(10),
+	Description = random_string(25),
+	RequestBody = "{\n"
+			++ "\t\"name\": \"" ++ Name ++ "\",\n"
+			++ "\t\"description\": \"" ++ Description ++ "\",\n"
+			++ "\t\"validFor\": {\n"
+			++ "\t\t\"startDateTime\": \"2019-01-29T00:00\",\n"
+			++ "\t\t\"endDateTime\": \"2019-12-31T23:59\"\n"
+			++ "\t},\n"
+			++ "\t\"usageSpecCharacteristic\": [\n"
+			++ "\t\t{\n"
+			++ "\t\t\t\"name\": \"" ++ Name ++ "\",\n"
+			++ "\t\t\t\"description\": \"" ++ Description ++ "\",\n"
+			++ "\t\t\t\"configurable\": \"true\",\n"
+			++ "\t\t\t\"usageSpecCharacteristicValue\": [\n"
+			++ "\t\t\t\t{\n"
+			++ "\t\t\t\t\t\"valueType\": \"number\",\n"
+			++ "\t\t\t\t\t\"default\": \"false\"\n"
+			++ "\t\t\t\t}\n"
+			++ "\t\t\t]\n"
+			++ "\t\t}\n"
+			++ "\t]\n"
+			++ "}\n",
+	ContentType = "application/json",
+	Accept = {"accept", "application/json"},
+	Request = {CollectionUrl, [Accept, auth_header()], ContentType, RequestBody},
+	{ok, Result} = httpc:request(post, Request, [], []),
+	{{"HTTP/1.1", 201, _Created}, Headers, ResponseBody} = Result,
+	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
+	ContentLength = integer_to_list(length(ResponseBody)),
+	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
+	{_, URI} = lists:keyfind("location", 1, Headers),
+	{?PathUsage ++ "usageSpecification/" ++ ID, _}
+			= httpd_util:split_path(URI),
+	F = fun() ->
+			mnesia:read(use_spec, ID, read)
+	end,
+	UsageSpec = case mnesia:transaction(F) of
+		{aborted, Reason} ->
+			{error, Reason};
+		{atomic, []} ->
+			{error, not_found};
+		{atomic, [Spec]} ->
+			{ok, Spec}
+	end,
+	{ok, #use_spec{id = ID, name = Name, description = Description,
+			characteristic = [C]}} = UsageSpec,
+	#specification_char{name = Name, description = Description,
+			configurable = true, char_value = [CV]} = C,
+	#spec_char_value{value_type = "number", default = false} = CV.
 
 %%---------------------------------------------------------------------
 %%  Internal functions
 %%---------------------------------------------------------------------
 
+random_string(Length) ->
+	Charset = lists:seq($a, $z),
+	NumChars = length(Charset),
+	Random = crypto:strong_rand_bytes(Length),
+	random_string(Random, Charset, NumChars,[]).
+random_string(<<N, Rest/binary>>, Charset, NumChars, Acc) ->
+	CharNum = (N rem NumChars) + 1,
+	NewAcc = [lists:nth(CharNum, Charset) | Acc],
+	random_string(Rest, Charset, NumChars, NewAcc);
+random_string(<<>>, _Charset, _NumChars, Acc) ->
+	Acc.
+
+basic_auth() ->
+	RestUser = ct:get_config(rest_user),
+	RestPass = ct:get_config(rest_pass),
+	EncodeKey = base64:encode_to_string(RestUser ++ ":" ++ RestPass),
+	"Basic " ++ EncodeKey.
+
+auth_header() ->
+	{"authorization", basic_auth()}.

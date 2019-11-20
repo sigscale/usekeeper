@@ -27,8 +27,7 @@
                   [mod_alias,
                   mod_auth,
                   mod_responsecontrol,
-						mod_usekeeper_rest_accepted_content
-						mod_usekeeper_rest_get
+						mod_usekeeper_rest_get,
                   mod_get,
                   mod_usekeeper_rest_accepted_content,
                   mod_usekeeper_rest_post,
