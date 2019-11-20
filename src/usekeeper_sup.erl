@@ -39,7 +39,9 @@
 %% @private
 %%
 init([] = _Args) ->
-	ChildSpecs = [server({local, usekeeper}, usekeeper_server, [self()])],
+	ChildSpecs = [server({local, usekeeper}, usekeeper_server, [self()]),
+			supervisor(usekeeper_rest_pagination_sup,
+				usekeeper_rest_pagination_sup, [])],
 	{ok, {{one_for_one, 10, 60}, ChildSpecs}}.
 
 %%----------------------------------------------------------------------
