@@ -56,6 +56,12 @@ do(#mod{method = Method, parsed_header = Headers, request_uri = Uri,
 				undefined ->
 					Path = http_uri:decode(Uri),
 					case string:tokens(Path, "/?") of
+						["party", "v4", "individual"] ->
+							check_content_type_header(Headers,
+									Method, usekeeper_rest_res_user, Data);
+						["party", "v4", "individual", _Id] ->
+							check_content_type_header(Headers,
+									Method, usekeeper_rest_res_user, Data);
 						["usageManagement", "v4", "usageSpecification"] ->
 							check_content_type_header(Headers,
 									Method, usekeeper_rest_usage_specification, Data);

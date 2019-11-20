@@ -192,7 +192,7 @@ delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
 			ok
 	end.
 
--spec query(Cont, Size, Table, Sort, MatchSpec, CountOnly) -> Result
+-spec query(Cont, Size, Sort, Table, MatchSpec, CountOnly) -> Result
 	when
 		Cont :: start | any(),
 		Size :: pos_integer() | undefined,
@@ -223,41 +223,41 @@ delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
 %%
 %% 	If `CountOnly' is `true' the result list will be empty.
 %%
-query(Cont, undefined, Table, Sort, MatchSpec, CountOnly)
+query(Cont, undefined, Sort, Table, MatchSpec, CountOnly)
 		when is_atom(Table), is_list(Sort), is_boolean(CountOnly) ->
 	{ok, Size} = application:get_env(usekeeper, rest_page_size),
-	query1(Cont, Size, Table, Sort, MatchSpec, CountOnly);
-query(Cont, Size, Table, Sort, MatchSpec, CountOnly)
+	query1(Cont, Size, Sort, Table, MatchSpec, CountOnly);
+query(Cont, Size, Sort, Table, MatchSpec, CountOnly)
 		when is_atom(Table), is_integer(Size),
 		is_list(Sort), is_boolean(CountOnly) ->
-	query1(Cont, Size, Table, Sort, MatchSpec, CountOnly).
+	query1(Cont, Size, Sort, Table, MatchSpec, CountOnly).
 %% @hidden
-query1(start, Size, Table, [], '_', true) ->
+query1(start, Size, [], Table, '_', true) ->
 	{eof, Size, mnesia:table_info(Table, size)};
-query1(start, Size, Table, [], '_', false) ->
+query1(start, Size, [], Table, '_', false) ->
 	MatchSpec = [{'_', [], ['$_']}],
 	F = fun() ->
 			{mnesia:select(Table, MatchSpec, Size, read),
 					mnesia:table_info(Table, size)}
 	end,
 	query2(mnesia:ets(F), [], false);
-query1(start, Size, Table, [], MatchSpec, false)
+query1(start, Size, [], Table, MatchSpec, false)
 		when is_integer(Size) ->
 	F = fun() ->
 		{mnesia:select(Table, MatchSpec, Size, read), undefined}
 	end,
 	query2(mnesia:ets(F), [], false);
-query1(start, _Size, Table, Sort, MatchSpec, CountOnly) ->
+query1(start, _Size, Sort, Table, MatchSpec, CountOnly) ->
 	F = fun() ->
 		{mnesia:select(Table, MatchSpec, read), undefined}
 	end,
 	query2(mnesia:ets(F), Sort, CountOnly);
-query1(Cont, _Size, Table, Sort, '_', CountOnly) ->
+query1(Cont, _Size, Sort, Table, '_', CountOnly) ->
 	F = fun() ->
 		{mnesia:select(Cont), mnesia:table_info(Table, size)}
 	end,
 	query2(mnesia:ets(F), Sort, CountOnly);
-query1(Cont, _Size, _Table, Sort, _MatchSpec, CountOnly) ->
+query1(Cont, _Size, Sort, _Table, _MatchSpec, CountOnly) ->
 	F = fun() ->
 		{mnesia:select(Cont), undefined}
 	end,

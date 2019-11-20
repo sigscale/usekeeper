@@ -6,9 +6,14 @@
 modhtml = usekeeper_app.html \
 			usekeeper_sup.html \
 			usekeeper_server.html \
-			usekeeper.html \
 			mod_usekeeper_rest_accepted_content.html \
 			mod_usekeeper_rest_post.html
+			mod_usekeeper_rest_get.html \
+			usekeeper_rest.html \
+			usekeeper_rest_pagination_server.html \
+			usekeeper_rest_pagination_sup.html \
+			usekeeper_rest_res_user.html \
+			usekeeper.html
 
 doc_DATA = overview.edoc $(modhtml) \
 		modules-frame.html overview-summary.html \

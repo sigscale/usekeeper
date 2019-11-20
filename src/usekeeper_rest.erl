@@ -21,7 +21,7 @@
 -module(usekeeper_rest).
 -copyright('Copyright (c) 2018-2019 SigScale Global Inc.').
 
--export([date/1, etag/1, iso8601/1]).
+-export([date/1, etag/1, iso8601/1, range/1]).
 
 -include("usage.hrl").
 
@@ -31,8 +31,8 @@
 
 -spec date(DateTimeFormat) -> Result
 	when
-		DateTimeFormat	:: pos_integer() | tuple(),
-		Result			:: calendar:datetime() | non_neg_integer().
+		DateTimeFormat :: pos_integer() | tuple(),
+		Result :: calendar:datetime() | non_neg_integer().
 %% @doc Convert iso8610 to date and time or
 %%		date and time to timeStamp.
 date(MilliSeconds) when is_integer(MilliSeconds) ->
@@ -54,10 +54,33 @@ etag(Etag) when is_list(Etag) ->
 	[TS, N] = string:tokens(Etag, "-"),
 	{list_to_integer(TS), list_to_integer(N)}.
 
+-spec range(Range) -> Result
+	when
+		Range :: RHS | {Start, End},
+		RHS :: string(),
+		Result :: {ok, {Start, End}} | {ok, RHS} | {error, 400},
+		Start :: pos_integer(),
+		End :: pos_integer().
+%% @doc Parse or create a `Range' request header.
+%% 	`RHS' should be the right hand side of an
+%% 	RFC7233 `Range:' header conforming to TMF630
+%% 	(e.g. "items=1-100").
+%% @private
+range(Range) when is_list(Range) ->
+	try
+		["items", S, E] = string:tokens(Range, "= -"),
+		{ok, {list_to_integer(S), list_to_integer(E)}}
+	catch
+		_:_ ->
+			{error, 400}
+	end;
+range({Start, End}) when is_integer(Start), is_integer(End) ->
+	{ok, "items=" ++ integer_to_list(Start) ++ "-" ++ integer_to_list(End)}.
+
 -spec iso8601(MilliSeconds) -> Result
 	when
-		MilliSeconds	:: pos_integer() | string(),
-		Result			:: string() | pos_integer().
+		MilliSeconds :: pos_integer() | string(),
+		Result :: string() | pos_integer().
 %% @doc Convert iso8610 to ISO 8601 format date and time.
 iso8601(MilliSeconds) when is_integer(MilliSeconds) ->
 	{{Year, Month, Day}, {Hour, Minute, Second}} = date(MilliSeconds),
