@@ -235,9 +235,7 @@ query(Cont, Size, Table, Sort, MatchSpec, CountOnly)
 query1(start, Size, Table, [], '_', true) ->
 	{eof, Size, mnesia:table_info(Table, size)};
 query1(start, Size, Table, [], '_', false) ->
-	Arity = mnesia:table_info(Table, arity),
-	MatchHead = erlang:make_tuple(Arity, '_', [{1, Table}]),
-	MatchSpec = [{MatchHead, [], ['$_']}],
+	MatchSpec = [{'_', [], ['$_']}],
 	F = fun() ->
 			{mnesia:select(Table, MatchSpec, Size, read),
 					mnesia:table_info(Table, size)}
