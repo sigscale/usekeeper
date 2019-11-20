@@ -64,7 +64,6 @@
 
 -record(use_spec,
 		{id :: string() | undefined,
-		href :: string() | undefined,
 		name :: string() | undefined,
 		description :: string() | undefined,
 		class_type :: string() | undefined,
@@ -102,7 +101,6 @@
 
 -record(usage,
 		{id :: string() | undefined,
-		href :: string() | undefined,
 		name :: string() | undefined,
 		description :: string() | undefined,
 		class_type :: string() | undefined,

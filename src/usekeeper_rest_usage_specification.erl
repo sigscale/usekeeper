@@ -57,8 +57,8 @@ post_usage_specification(RequestBody) ->
 	try
 		{ok, UsageSpecMap} = zj:decode(RequestBody),
 		case usekeeper:add_usage_spec(usage_specification(UsageSpecMap)) of
-			{ok, #use_spec{href = Href, last_modified = LM} = UsageSpec} ->
-				Headers = [{location, Href}, {etag, usekeeper_rest:etag(LM)}],
+			{ok, #use_spec{last_modified = LM} = UsageSpec} ->
+				Headers = [{etag, usekeeper_rest:etag(LM)}],
 				Body = zj:encode(usage_specification(UsageSpec)),
 				{ok, Headers, Body};
 			{error, _Reason} ->
@@ -84,12 +84,6 @@ usage_specification([id | T], #use_spec{id = Id} = R, Acc)
 usage_specification([id | T], #{"id" := Id} = M, Acc)
 		when is_list(Id) ->
 	usage_specification(T, M, Acc#use_spec{id = Id});
-usage_specification([href | T], #use_spec{href = Href} = R, Acc)
-		when is_list(Href) ->
-	usage_specification(T, R, Acc#{"href" => Href});
-usage_specification([href | T], #{"href" := Href} = M, Acc)
-		when is_list(Href) ->
-	usage_specification(T, M, Acc#use_spec{href = Href});
 usage_specification([name | T], #use_spec{name = Name} = R, Acc)
 		when is_list(Name) ->
 	usage_specification(T, R, Acc#{"name" => Name});

@@ -159,9 +159,7 @@ post_usage_specification(Config) ->
 	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
 	ContentLength = integer_to_list(length(ResponseBody)),
 	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
-	{_, URI} = lists:keyfind("location", 1, Headers),
-	{?PathUsage ++ "usageSpecification/" ++ ID, _}
-			= httpd_util:split_path(URI),
+	{ok, #{"id" := ID}} = zj:decode(ResponseBody),
 	F = fun() ->
 			mnesia:read(use_spec, ID, read)
 	end,

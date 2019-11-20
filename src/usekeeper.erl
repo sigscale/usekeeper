@@ -31,8 +31,6 @@
 -include("usage.hrl").
 -include_lib("inets/include/mod_auth.hrl").
 
--define(PathUsage, "/usageManagement/v4/").
-
 %%----------------------------------------------------------------------
 %%  The usekeeper public API
 %%----------------------------------------------------------------------
@@ -166,9 +164,7 @@ add_usage_spec(#use_spec{id = undefined,
 		last_modified = undefined} = UsageSpec) ->
 	F = fun() ->
 			{Id, LM} = unique(),
-			Href = ?PathUsage ++ "usageSpecification/" ++ Id,
-			NewUsageSpec = UsageSpec#use_spec{id = Id,
-					href = Href, last_modified = LM},
+			NewUsageSpec = UsageSpec#use_spec{id = Id, last_modified = LM},
 			ok = mnesia:write(NewUsageSpec),
 			NewUsageSpec
 	end,
