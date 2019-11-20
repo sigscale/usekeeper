@@ -225,7 +225,7 @@ delete_usage_spec(UsageSpecId) when is_list(UsageSpecId) ->
 %%
 query(Cont, undefined, Table, Sort, MatchSpec, CountOnly)
 		when is_atom(Table), is_list(Sort), is_boolean(CountOnly) ->
-	{ok, Size} = application:get_env(sigscale_im, rest_page_size),
+	{ok, Size} = application:get_env(usekeeper, rest_page_size),
 	query1(Cont, Size, Table, Sort, MatchSpec, CountOnly);
 query(Cont, Size, Table, Sort, MatchSpec, CountOnly)
 		when is_atom(Table), is_integer(Size),
