@@ -227,7 +227,9 @@ class UseKeeper extends PolymerElement {
 		// Show 'usageView' in that case. And if the page doesn't exist, show 'view404'.
 		if (!page) {
 			this.page = 'usageView';
-		} else if (['specView'].indexOf(page) !== -1) {
+		} else if (['usageView',
+				'userView',
+				'specView'].indexOf(page) !== -1) {
 			this.page = page;
 		}
 		switch (this.page) {
@@ -259,14 +261,13 @@ class UseKeeper extends PolymerElement {
 				// import('./use-spec-list.js');
 				break;
 			case 'userView':
-				// import('./usekeeper-user-list.js');
+				import('./usekeeper-user-list.js');
 				break;
 		}
 	}
 
 	_loadingChanged() {
-		if (this.dashLoading || this.userLoading || this.alarmLoading || this.logLoading
-			|| this.httpLoading) {
+		if (this.usageLoading || this.userLoading || this.specLoading) {
 			this.loading = true;
 		} else {
 			this.loading = false;

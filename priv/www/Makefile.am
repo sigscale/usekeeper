@@ -8,7 +8,8 @@ www_DATA = $(abs_builddir)/build/polymer.json
 LINKS = index.html manifest.json images src
 
 MODULES = usekeeper-shell.js \
-		usekeeper-help.js
+		usekeeper-help.js \
+		usekeeper-user-list.js
 
 $(abs_builddir)/index.html:
 	for i in $(LINKS); do \
