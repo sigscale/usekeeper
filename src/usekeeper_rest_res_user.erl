@@ -119,7 +119,7 @@ get_users1(Method, Query, Filters, Headers) ->
 		Query :: [{Key :: string(), Value :: string()}],
 		Result :: {ok, Headers :: [tuple()], Body :: iolist()}
 			| {error, ErrorCode :: integer()}.
-%% @doc Body producing function for `GET /partyManagement/v1/individual/{id}'
+%% @doc Body producing function for `GET /party/v4/individual/{id}'
 %% requests.
 get_user(Id, Query) ->
 	case lists:keytake("fields", 1, Query) of
@@ -162,11 +162,11 @@ get_user(_, _, _) ->
 %% @doc CODEC for HTTP server users.
 user(#httpd_user{username = {ID, _, _, _}} = HttpdUser) ->
 	user(HttpdUser#httpd_user{username  = ID});
-user(#httpd_user{username = ID, password = Password, user_data = Chars})
-		when is_list(ID), is_list(Password), is_list(Chars) ->
+user(#httpd_user{username = ID, user_data = Chars})
+		when is_list(ID), is_list(Chars) ->
 	C1 = case lists:keyfind(givenName, 1, Chars) of
 		{_, GivenName} ->
-			#{"name" => "givenName", "value" => GivenName};
+			[#{"name" => "givenName", "value" => GivenName}];
 		false ->
 			[]
 	end,
@@ -177,13 +177,13 @@ user(#httpd_user{username = ID, password = Password, user_data = Chars})
 			C1
 	end,
 	#{"id" => ID,
-		"href" => "/party/v1/individual/" ++ ID,
+		"href" => "/party/v4/individual/" ++ ID,
 		"characteristic" => C2};
 user(#{"id" := ID, "characteristic" := Chars})
 		when is_list(ID), is_list(Chars) ->
 	{Port, Address, Directory, _Group} = get_params(),
 	Username = {ID, Address, Port, Directory},
-	user1(Chars, #httpd_user{username = Username, user_data = []}).
+	user1(Chars, #httpd_user{username = Username, user_data = Chars}).
 %% @hidden
 user1([#{"name" := "username", "value" := Username} | T], Acc)
 		when is_list(Username) ->
@@ -192,9 +192,12 @@ user1([#{"name" := "username", "value" := Username} | T], Acc)
 user1([#{"name" := "password", "value" := Password} | T], Acc)
 		when is_list(Password) ->
 	user1(T, Acc#httpd_user{password = Password});
-user1([#{"name" := "locale", "value" := Locale} | T],
-	#httpd_user{user_data = Data} = Acc) when is_list(Locale) ->
-	user1(T, Acc#httpd_user{user_data = [{locale, Locale} | Data]});
+user1([#{"name" := "givenName", "value" := GivenName} | T],
+	#httpd_user{user_data = Data} = Acc) when is_list(GivenName) ->
+	user1(T, Acc#httpd_user{user_data = [{givenName, GivenName} | Data]});
+user1([#{"name" := "lastName", "value" := LastName} | T],
+	#httpd_user{user_data = Data} = Acc) when is_list(LastName) ->
+	user1(T, Acc#httpd_user{user_data = [{lastName, LastName} | Data]});
 user1([_H | T], Acc) ->
 	user1(T, Acc);
 user1([], Acc) ->
