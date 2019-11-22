@@ -24,7 +24,7 @@
 -copyright('Copyright (c) 2019 SigScale Global Inc.').
 
 -export([content_types_accepted/0, content_types_provided/0]).
--export([post_usage_specification/1]).
+-export([post_usage_specification/1, get_usage_specifications/3]).
 -export([usage_specification/1]).
 
 -include("usage.hrl").
@@ -67,6 +67,81 @@ post_usage_specification(RequestBody) ->
 	catch
 		_:_Reason1 ->
 			{error, 400}
+	end.
+
+-spec get_usage_specifications(Method, Query, Headers) -> Result
+	when
+		Method :: string(), % "GET"
+		Query :: [{Key :: string(), Value :: string()}],
+		Headers :: [tuple()],
+		Result :: {ok, Headers :: [tuple()], Body :: iolist()}
+				| {error, ErrorCode :: integer()}.
+%% @doc Body producing function for
+%% 	`GET /usageManagement/v4/usageSpecification'
+%% 	requests.
+get_usage_specifications(Method, Query, Headers) ->
+	case lists:keytake("fields", 1, Query) of
+		{value, {_, Filters}, NewQuery} ->
+			get_usage_specifications(Method, NewQuery, Filters, Headers);
+		false ->
+			get_usage_specifications(Method, Query, [], Headers)
+	end.
+%% @hidden
+get_usage_specifications(Method, Query, Filters, Headers) ->
+	case {lists:keyfind("if-match", 1, Headers),
+			lists:keyfind("if-range", 1, Headers),
+			lists:keyfind("range", 1, Headers)} of
+		{{"if-match", Etag}, false, {"range", Range}} ->
+			case global:whereis_name(Etag) of
+				undefined ->
+					{error, 412};
+				PageServer ->
+					case usekeeper_rest:range(Range) of
+						{error, _} ->
+							{error, 400};
+						{ok, {Start, End}} ->
+							query_page(PageServer, Etag, Query, Filters, Start, End)
+					end
+			end;
+		{{"if-match", Etag}, false, false} ->
+			case global:whereis_name(Etag) of
+				undefined ->
+					{error, 412};
+				PageServer ->
+					query_page(PageServer, Etag, Query, Filters, undefined, undefined)
+			end;
+		{false, {"if-range", Etag}, {"range", Range}} ->
+			case global:whereis_name(Etag) of
+				undefined ->
+					case usekeeper_rest:range(Range) of
+						{error, _} ->
+							{error, 400};
+						{ok, {Start, End}} ->
+							query_start(Method, Query, Filters, Start, End)
+					end;
+				PageServer ->
+					case usekeeper_rest:range(Range) of
+						{error, _} ->
+							{error, 400};
+						{ok, {Start, End}} ->
+							query_page(PageServer, Etag, Query, Filters, Start, End)
+					end
+			end;
+		{{"if-match", _}, {"if-range", _}, _} ->
+			{error, 400};
+		{_, {"if-range", _}, false} ->
+			{error, 400};
+		{false, false, {"range", "items=1-" ++ _ = Range}} ->
+			case usekeeper_rest:range(Range) of
+				{error, _} ->
+					{error, 400};
+				{ok, {Start, End}} ->
+					query_start(Method, Query, Filters, Start, End)
+			end;
+		{false, false, {"range", _Range}} ->
+			{error, 416};
+		{false, false, false} ->
+			query_start(Method, Query, Filters, undefined, undefined)
 	end.
 
 -spec usage_specification(UsageSpec) -> UsageSpec
@@ -220,3 +295,37 @@ spec_char_value([], _, Acc) ->
 %%  internal functions
 %%----------------------------------------------------------------------
 
+%% @hidden
+query_start(Method, Query, Filters, RangeStart, RangeEnd) ->
+	try
+		CountOnly = case Method of
+			"GET" ->
+				false;
+			"HEAD" ->
+				true
+		end,
+		MFA = [usekeeper, query, [use_spec, '_'] ++ [CountOnly]],
+		case supervisor:start_child(usekeeper_rest_pagination_sup, [MFA]) of
+			{ok, PageServer, Etag} ->
+				query_page(PageServer, Etag, Query, Filters, RangeStart, RangeEnd);
+			{error, _Reason} ->
+				{error, 500}
+		end
+	catch
+		_:_ ->
+			{error, 400}
+	end.
+
+%% @hidden
+query_page(PageServer, Etag, _Query, _Filters, Start, End) ->
+	case gen_server:call(PageServer, {Start, End}, infinity) of
+		{error, Status} ->
+			{error, Status};
+		{Events, ContentRange} ->
+			UsageSpecs = lists:map(fun usage_specification/1, Events),
+			Body = zj:encode(UsageSpecs),
+			Headers = [{content_type, "application/json"},
+				{etag, Etag}, {accept_ranges, "items"},
+				{content_range, ContentRange}],
+			{ok, Headers, Body}
+	end.
