@@ -51,6 +51,8 @@ suite() ->
 %% Initiation before the whole suite.
 %%
 init_per_suite(Config) ->
+	PrivDir = ?config(priv_dir, Config),
+	ok = application:set_env(mnesia, dir, PrivDir),
 	ok = usekeeper_test_lib:initialize_db(),
 	ok = usekeeper_test_lib:start(),
 	{ok, Services} = application:get_env(inets, services),
@@ -91,7 +93,8 @@ init_per_suite(Config) ->
 %% Cleanup after the whole suite.
 %%
 end_per_suite(_Config) ->
-	ok = usekeeper_test_lib:stop().
+	ok = usekeeper_test_lib:stop(),
+   ok = application:stop(mnesia).
 
 -spec init_per_testcase(TestCase :: atom(), Config :: [tuple()]) -> Config :: [tuple()].
 %% Initiation before each test case.
@@ -115,7 +118,7 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[post_usage_specification].
+	[post_usage_specification, get_usage_specifications].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -177,6 +180,32 @@ post_usage_specification(Config) ->
 			configurable = true, char_value = [CV]} = C,
 	#spec_char_value{value_type = "number", default = false} = CV.
 
+get_usage_specifications() ->
+	[{userdata, [{doc, "GET Usage Specification collection"}]}].
+
+get_usage_specifications(Config) ->
+	F = fun(_F, 0) ->
+				ok;
+			(F, N) ->
+				UseSpec = usekeeper_test_lib:voice_spec(),
+				{ok, #use_spec{}} = usekeeper:add_usage_spec(UseSpec),
+				F(F, N - 1)
+	end,
+	ok = F(F, 5),
+	HostUrl = ?config(host_url, Config),
+	PathUsageSpec = ?PathUsage ++ "usageSpecification",
+	CollectionUrl = HostUrl ++ PathUsageSpec,
+	Accept = {"accept", "application/json"},
+	Request = {CollectionUrl, [Accept, auth_header()]},
+	{ok, Result} = httpc:request(get, Request, [], []),
+	{{"HTTP/1.1", 200, _OK}, Headers, ResponseBody} = Result,
+	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
+	ContentLength = integer_to_list(length(ResponseBody)),
+	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
+	{ok, UsageSpecs} = zj:decode(ResponseBody),
+	true = length(UsageSpecs) >= 5,
+	true = lists:all(fun is_usage_spec/1, UsageSpecs).
+
 %%---------------------------------------------------------------------
 %%  Internal functions
 %%---------------------------------------------------------------------
@@ -201,3 +230,25 @@ basic_auth() ->
 
 auth_header() ->
 	{"authorization", basic_auth()}.
+
+is_usage_spec(#{"id" := Id, "name" := Name, "description" := Description,
+		"validFor" := #{"startDateTime" := StartTime, "endDateTime" := EndTime},
+		"usageSpecCharacteristic" := UsageSpecChars})
+		when is_list(Id), is_list(Name), is_list(Description),
+		is_list(StartTime), is_list(EndTime), is_list(UsageSpecChars) ->
+	true = lists:all(fun is_usage_spec_char/1, UsageSpecChars);
+is_usage_spec(_) ->
+	false.
+
+is_usage_spec_char(#{"name" := Name, "description" := Description,
+		"configurable" := "true", "usageSpecCharacteristicValue" := CharValue})
+		when is_list(Name), is_list(Description), is_list(CharValue) ->
+	true = lists:all(fun is_usage_spec_char_val/1, CharValue);
+is_usage_spec_char(_) ->
+	false.
+
+is_usage_spec_char_val(#{"valueType" := Type, "default" := Default})
+		when is_list(Type), is_list(Default) ->
+	true;
+is_usage_spec_char_val(_) ->
+	false.
