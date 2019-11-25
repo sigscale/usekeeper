@@ -65,6 +65,9 @@ do(#mod{method = Method, parsed_header = Headers, request_uri = Uri,
 						["usageManagement", "v4", "usageSpecification"] ->
 							check_content_type_header(Headers,
 									Method, usekeeper_rest_usage_specification, Data);
+						["usageManagement", "v4", "usageSpecification", _Id] ->
+							check_content_type_header(Headers,
+									Method, usekeeper_rest_usage_specification, Data);
 						_ ->
 							{proceed, Data}
 					end;

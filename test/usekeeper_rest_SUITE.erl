@@ -118,7 +118,7 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[post_usage_specification, get_usage_specifications].
+	[post_usage_specification, get_usage_specifications, delete_usage_specification].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -205,6 +205,28 @@ get_usage_specifications(Config) ->
 	{ok, UsageSpecs} = zj:decode(ResponseBody),
 	true = length(UsageSpecs) >= 5,
 	true = lists:all(fun is_usage_spec/1, UsageSpecs).
+
+delete_usage_specification() ->
+	[{userdata, [{doc,"Delete usage specification for given Id"}]}].
+
+delete_usage_specification(Config) ->
+	UseSpec = usekeeper_test_lib:voice_spec(),
+	{ok, #use_spec{id = Id}} = usekeeper:add_usage_spec(UseSpec),
+	HostUrl = ?config(host_url, Config),
+	URI = ?PathUsage ++ "usageSpecification/" ++ Id,
+	Request = {HostUrl ++ URI, [auth_header()]},
+	{ok, Result} = httpc:request(delete, Request, [], []),
+	{{"HTTP/1.1", 204, _NoContent}, Headers, []} = Result,
+	{_, "0"} = lists:keyfind("content-length", 1, Headers),
+	F = fun() ->
+			mnesia:read(use_spec, Id, read)
+	end,
+	{error, not_found} = case mnesia:transaction(F) of
+		{aborted, Reason} ->
+			{error, Reason};
+		{atomic, []} ->
+			{error, not_found}
+	end.
 
 %%---------------------------------------------------------------------
 %%  Internal functions

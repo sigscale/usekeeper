@@ -9,6 +9,7 @@ modhtml = usekeeper_app.html \
 			mod_usekeeper_rest_accepted_content.html \
 			mod_usekeeper_rest_post.html
 			mod_usekeeper_rest_get.html \
+			mod_usekeeper_rest_delete.html \
 			usekeeper_rest.html \
 			usekeeper_rest_pagination_server.html \
 			usekeeper_rest_pagination_sup.html \

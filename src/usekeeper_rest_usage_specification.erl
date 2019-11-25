@@ -24,7 +24,8 @@
 -copyright('Copyright (c) 2019 SigScale Global Inc.').
 
 -export([content_types_accepted/0, content_types_provided/0]).
--export([post_usage_specification/1, get_usage_specifications/3]).
+-export([post_usage_specification/1, get_usage_specifications/3,
+		delete_usage_specification/1]).
 -export([usage_specification/1]).
 
 -include("usage.hrl").
@@ -142,6 +143,20 @@ get_usage_specifications(Method, Query, Filters, Headers) ->
 			{error, 416};
 		{false, false, false} ->
 			query_start(Method, Query, Filters, undefined, undefined)
+	end.
+
+-spec delete_usage_specification(Id) -> Result
+	when
+		Id :: string(),
+		Result :: {ok, Headers :: [tuple()], Body :: iolist()}
+				| {error, ErrorCode :: integer()} .
+%% @doc Handle `DELETE' request on a `Usage Specification' resource.
+delete_usage_specification(Id) ->
+	case usekeeper:delete_usage_spec(Id) of
+		ok ->
+			{ok, [], []};
+		{error, _Reason} ->
+			{error, 400}
 	end.
 
 -spec usage_specification(UsageSpec) -> UsageSpec
