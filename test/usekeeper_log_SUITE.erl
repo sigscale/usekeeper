@@ -53,7 +53,8 @@ init_per_suite(Config) ->
 %% Cleanup after the whole suite.
 %%
 end_per_suite(_Config) ->
-	ok = usekeeper_test_lib:stop().
+	ok = usekeeper_test_lib:stop(),
+	ok = application:stop(mnesia).
 
 -spec init_per_testcase(TestCase :: atom(), Config :: [tuple()]) -> Config :: [tuple()].
 %% Initiation before each test case.
