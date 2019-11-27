@@ -7,7 +7,7 @@
 %%% you may not use this file except in compliance with the License.
 %%% You may obtain a copy of the License at
 %%%
-%%%     http://www.apache.org/licenses/LICENSE-2.0
+%%%	  http://www.apache.org/licenses/LICENSE-2.0
 %%%
 %%% Unless required by applicable law or agreed to in writing, software
 %%% distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,13 @@
 %%% limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% @doc This library module implements resource handling functions
-%%%   for a REST server in the {@link //usekeeper. usekeeper} application.
+%%%	for a REST server in the {@link //usekeeper. usekeeper} application.
 %%%
 -module(usekeeper_rest_res_user).
 -copyright('Copyright (c) 2019 SigScale Global Inc.').
 
 -export([content_types_accepted/0, content_types_provided/0, get_params/0,
-		get_user/2, get_users/3, user/1]).
+		get_user/2, get_users/3, post_user/1, user/1]).
 
 -include_lib("inets/include/mod_auth.hrl").
 -include("usage.hrl").
@@ -41,13 +41,52 @@ content_types_accepted() ->
 content_types_provided() ->
 	["application/json"].
 
+-spec post_user(RequestBody) -> Result
+	when
+		RequestBody :: list(),
+		Result :: {ok, Headers :: [tuple()], Body :: iolist()}
+			| {error, ErrorCode :: integer()}.
+%% @doc Handle `POST' request on `Individual' collection.
+post_user(RequestBody) ->
+	try
+		{ok, UserMap} = zj:decode(RequestBody),
+		User = user(UserMap),
+		{Username, _, _, _} = User#httpd_user.username,
+		Password = User#httpd_user.password,
+		FirstName = case lists:keyfind(givenName, 1, User#httpd_user.user_data) of
+			{_, Giv} ->
+				Giv;
+			false ->
+				'_'
+		end,
+		LastName = case lists:keyfind(lastName, 1, User#httpd_user.user_data) of
+			{_, Last} ->
+				Last;
+			false ->
+				'_'
+		end,
+		case usekeeper:add_user(FirstName, LastName, Username, Password) of
+			{ok, {_, LastModified}} ->
+				User1 = user(User),
+				Body = zj:encode(User1),
+				Location = "/party/v4/individual" ++ Username,
+				Headers = [{location, Location}, {etag, usekeeper_rest:etag(LastModified)}],
+				{ok, Headers, Body};
+			{error, _Reason} ->
+				{error, 400}
+		end
+	catch
+		_:_Reason1 ->
+			{error, 400}
+	end.
+
 -spec get_users(Method, Query, Headers) -> Result
 	when
 		Method :: string(), % "GET" | "HEAD",
 		Query :: [{Key :: string(), Value :: string()}],
 		Headers :: [tuple()],
 		Result :: {ok, Headers :: [tuple()], Body :: iolist()}
-            | {error, ErrorCode :: integer()}.
+			   | {error, ErrorCode :: integer()}.
 %% @doc Body producing function for `GET /partyManagement/v1/individual'
 %% requests.
 get_users(Method, Query, Headers) ->
@@ -162,11 +201,13 @@ get_user(_, _, _) ->
 %% @doc CODEC for HTTP server users.
 user(#httpd_user{username = {ID, _, _, _}} = HttpdUser) ->
 	user(HttpdUser#httpd_user{username  = ID});
-user(#httpd_user{username = ID, user_data = Chars})
+user(#httpd_user{username = ID, password = Password, user_data = Chars})
 		when is_list(ID), is_list(Chars) ->
+	C = [#{"name" => "username", "value" => ID},
+			#{"name" => "password", "value" => Password}],
 	C1 = case lists:keyfind(givenName, 1, Chars) of
 		{_, GivenName} ->
-			[#{"name" => "givenName", "value" => GivenName}];
+			[#{"name" => "givenName", "value" => GivenName} | C];
 		false ->
 			[]
 	end,
