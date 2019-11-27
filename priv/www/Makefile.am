@@ -9,6 +9,7 @@ LINKS = index.html manifest.json images src
 
 MODULES = usekeeper-shell.js \
 		usekeeper-help.js \
+		usekeeper-user-add.js \
 		usekeeper-user-list.js
 
 $(abs_builddir)/index.html:
