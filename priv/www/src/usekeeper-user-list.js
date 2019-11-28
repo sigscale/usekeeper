@@ -12,6 +12,8 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
+import '@polymer/paper-fab/paper-fab.js';
+import './usekeeper-icons.js';
 import './style-element.js';
 
 class userList extends PolymerElement {
@@ -40,6 +42,12 @@ class userList extends PolymerElement {
 					<template>[[item.id]]</template>
 				</vaadin-grid-column>
 			</vaadin-grid>
+			<div class="add-button">
+				<paper-fab
+					icon="my-icons:add"
+					on-tap = "showAddUserModal">
+				</paper-fab>
+			</div>
 			<iron-ajax
 				id="getUserAjax"
 				url="party/v4/individual"
@@ -126,7 +134,7 @@ class userList extends PolymerElement {
 			}
 			callback([]);
 		}
-		      if(ajax.loading) {
+		if(ajax.loading) {
 			ajax.lastRequest.completes.then(function(request) {
 				var startRange = params.page * params.pageSize + 1;
 				ajax.headers['Range'] = "items=" + startRange + "-" + endRange;
@@ -148,6 +156,9 @@ class userList extends PolymerElement {
 			}
 			ajax.generateRequest().completes.then(handleAjaxResponse, handleAjaxError);
 		}
+	}
+	showAddUserModal(event) {
+		document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-user-add').shadowRoot.getElementById('addUserModal').open();
 	}
 }
 

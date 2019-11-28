@@ -71,6 +71,15 @@ styleElement.innerHTML = `<template>
 			.drawer-list iron-collapse#logs {
 				padding-left: 36px;
 			}
+			.submit-button {
+				background-color: var(--paper-lime-a700);
+				color: black;
+				float: right;
+				width: 8em;
+			}
+			.cancel-button {
+				color: black;
+			}
 			#restError {
 				--paper-toast-background-color: var(--paper-red-a400);
 			}
