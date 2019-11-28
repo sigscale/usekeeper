@@ -273,101 +273,20 @@ usage_specification([end_date | T],
 	usage_specification(T, M, Acc#use_spec{end_date = usekeeper_rest:iso8601(End)});
 usage_specification([characteristic | T],
 		#use_spec{characteristic = UsageSpecChar} = R, Acc)
-		when is_list(UsageSpecChar), length(UsageSpecChar) > 0 ->
+		when is_map(UsageSpecChar) ->
+erlang:display({?MODULE, ?LINE, UsageSpecChar}),
 	usage_specification(T, R,
-			Acc#{"usageSpecCharacteristic" => usage_spec_char(UsageSpecChar)});
+			Acc#{"usageSpecCharacteristic" => UsageSpecChar});
 usage_specification([characteristic | T],
 		#{"usageSpecCharacteristic" := UsageSpecChar} = M, Acc)
-		when is_list(UsageSpecChar) ->
+		when is_map(UsageSpecChar) ->
+erlang:display({?MODULE, ?LINE, UsageSpecChar}),
 	usage_specification(T, M,
-			Acc#use_spec{characteristic = usage_spec_char(UsageSpecChar)});
-usage_specification([_ | T], R, Acc) ->
+			Acc#use_spec{characteristic = UsageSpecChar});
+usage_specification([_H | T], R, Acc) ->
+erlang:display({?MODULE, ?LINE, _H}),
 	usage_specification(T, R, Acc);
 usage_specification([], _, Acc) ->
-	Acc.
-
--spec usage_spec_char(UsageSpecChar) -> UsageSpecChar
-	when
-		UsageSpecChar :: [specification_char()] | [map()].
-%% @doc CODEC for `UsageSpecCharacteristic'.
-usage_spec_char([#specification_char{} | _] = List) ->
-	Fields = record_info(fields, specification_char),
-	[usage_spec_char(Fields, R, #{}) || R <- List];
-usage_spec_char([#{} | _] = List) ->
-	Fields = record_info(fields, specification_char),
-	[usage_spec_char(Fields, M, #specification_char{}) || M <- List];
-usage_spec_char([]) ->
-	[].
-%% @hidden
-usage_spec_char([name | T], #specification_char{name = Name} = R, Acc)
-		when is_list(Name) ->
-	usage_spec_char(T, R, Acc#{"name" => Name});
-usage_spec_char([name | T], #{"name" := Name} = M, Acc)
-		when is_list(Name) ->
-	usage_spec_char(T, M, Acc#specification_char{name = Name});
-usage_spec_char([description | T], #specification_char{description = Description} = R, Acc)
-		when is_list(Description) ->
-	usage_spec_char(T, R, Acc#{"description" => Description});
-usage_spec_char([description | T], #{"description" := Description} = M, Acc)
-		when is_list(Description) ->
-	usage_spec_char(T, M, Acc#specification_char{description = Description});
-usage_spec_char([configurable | T], #specification_char{configurable = Configurable} = R, Acc)
-		when is_boolean(Configurable) ->
-	usage_spec_char(T, R, Acc#{"configurable" => atom_to_list(Configurable)});
-usage_spec_char([configurable | T], #{"configurable" := Configurable} = M, Acc)
-		when is_list(Configurable) ->
-	usage_spec_char(T, M, Acc#specification_char{configurable = list_to_existing_atom(Configurable)});
-usage_spec_char([char_value | T], #specification_char{char_value = SpecCharValue} = R, Acc)
-		when is_list(SpecCharValue), length(SpecCharValue) > 0 ->
-	usage_spec_char(T, R, Acc#{"usageSpecCharacteristicValue" => spec_char_value(SpecCharValue)});
-usage_spec_char([char_value | T], #{"usageSpecCharacteristicValue" := SpecCharValue} = M, Acc)
-		when is_list(SpecCharValue) ->
-	usage_spec_char(T, M, Acc#specification_char{char_value = spec_char_value(SpecCharValue)});
-usage_spec_char([_ | T], R, Acc) ->
-	usage_spec_char(T, R, Acc);
-usage_spec_char([], _, Acc) ->
-	Acc.
-
--spec spec_char_value(SpecCharValue) -> SpecCharValue
-	when
-		SpecCharValue :: [spec_char_value()] | [map()].
-%% @doc CODEC for `UsageSpecCharacteristicValue'.
-spec_char_value([#spec_char_value{} | _] = List) ->
-	Fields = record_info(fields, spec_char_value),
-	[spec_char_value(Fields, R, #{}) || R <- List];
-spec_char_value([#{} | _] = List) ->
-	Fields = record_info(fields, spec_char_value),
-	[spec_char_value(Fields, M, #spec_char_value{}) || M <- List];
-spec_char_value([]) ->
-	[].
-%% @hidden
-spec_char_value([value_type | T], #spec_char_value{value_type = ValueType} = R, Acc)
-		when is_list(ValueType) ->
-	spec_char_value(T, R, Acc#{"valueType" => ValueType});
-spec_char_value([value_type | T], #{"valueType" := ValueType} = M, Acc)
-		when is_list(ValueType) ->
-	spec_char_value(T, M, Acc#spec_char_value{value_type = ValueType});
-spec_char_value([default | T], #spec_char_value{default = Default} = R, Acc)
-		when is_boolean(Default) ->
-	spec_char_value(T, R, Acc#{"default" => atom_to_list(Default)});
-spec_char_value([default | T], #{"default" := Default} = M, Acc)
-		when is_list(Default) ->
-	spec_char_value(T, M, Acc#spec_char_value{default = list_to_existing_atom(Default)});
-spec_char_value([value | T], #spec_char_value{value = Value} = R, Acc) ->
-	spec_char_value(T, R, Acc#{"value" => Value});
-spec_char_value([value | T], #{"value" := Value} = M, Acc) ->
-	spec_char_value(T, M, Acc#spec_char_value{value = Value});
-spec_char_value([from | T], #spec_char_value{from = From} = R, Acc) ->
-	spec_char_value(T, R, Acc#{"valueFrom" => From});
-spec_char_value([from | T], #{"valueFrom" := From} = M, Acc) ->
-	spec_char_value(T, M, Acc#spec_char_value{from = From});
-spec_char_value([to | T], #spec_char_value{to = To} = R, Acc) ->
-	spec_char_value(T, R, Acc#{"valueTo" => To});
-spec_char_value([value | T], #{"valueTo" := To} = M, Acc) ->
-	spec_char_value(T, M, Acc#spec_char_value{to = To});
-spec_char_value([_ | T], R, Acc) ->
-	spec_char_value(T, R, Acc);
-spec_char_value([], _, Acc) ->
 	Acc.
 
 %%----------------------------------------------------------------------
