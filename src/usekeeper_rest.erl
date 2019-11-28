@@ -21,7 +21,7 @@
 -module(usekeeper_rest).
 -copyright('Copyright (c) 2018-2019 SigScale Global Inc.').
 
--export([date/1, etag/1, iso8601/1, range/1]).
+-export([date/1, etag/1, iso8601/1, range/1, patch/2, pointer/1]).
 
 -include("usage.hrl").
 
@@ -137,6 +137,64 @@ iso8601_time([], {H, Mi, S, Ms}) ->
 	{H, Mi, S, Ms};
 iso8601_time([], []) ->
 	{0,0,0,0}.
+
+-spec pointer(Path) -> Pointer
+	when
+		Path :: string(),
+		Pointer :: [string()].
+%% @doc Decode JSON Pointer.
+%%    Apply the decoding rules of <a href="http://tools.ietf.org/html/rfc6901">RFC6901</a>.
+%%    `Path' is a JSON string as used in the `"path"' member of a
+%%    JSON Patch ((<a href="http://tools.ietf.org/html/rfc6902">RFC6902</a>)
+%%    operation. `Pointer' is a list of member name strings in a path.
+pointer(Pointer) ->
+	pointer(Pointer, [], []).
+%% @hidden
+pointer([$/ | T], [], Acc) ->
+	pointer(T, [], Acc);
+pointer([$/ | T], Acc1, Acc2) ->
+	pointer(T, [], [lists:reverse(Acc1) | Acc2]);
+pointer([$- | T], Acc1, Acc2) ->
+	pointer1(T, Acc1, Acc2);
+pointer([H | T], Acc1, Acc2) ->
+	pointer(T, [H | Acc1], Acc2);
+pointer([], Acc1, Acc2) ->
+	lists:reverse([lists:reverse(Acc1) | Acc2]).
+%% @hidden
+pointer1([$1 | T], Acc1, Acc2) ->
+	pointer(T, [$/ | Acc1], Acc2);
+pointer1([$0 | T], Acc1, Acc2) ->
+	pointer(T, [$- | Acc1], Acc2);
+pointer1(T, Acc1, Acc2) ->
+	pointer(T, [$- | Acc1], Acc2).
+
+-spec patch(Patch, Resource) -> Result
+	when
+		Patch :: [map()],
+		Resource :: map(),
+		Result :: map().
+%% @doc Apply a JSON `Patch' (<a href="http://tools.ietf.org/html/rfc6902">RFC6902</a>).
+%%    Modifies the `Resource' by applying the operations listed in `Patch'.
+%%    `Operation' may be `"add"', `"remove"', or `"replace"'.
+%%
+patch([#{"op" := "add", "path" := Pointer,
+		"value" := Value} | T] = _Patch, Resource) ->
+	[Path] = pointer(Pointer),
+	patch(T, Resource#{Path => Value});
+patch([#{"op" := "replace", "path" := Pointer,
+		"value" := Value} | T], Resource) ->
+	[Path] = pointer(Pointer),
+	case maps:is_key(Path, Resource) of
+		true ->
+			patch(T, Resource#{Path => Value});
+		false ->
+			mnesia:abort(400)
+	end;
+patch([#{"op" := "remove", "path" := Pointer} | T], Resource) ->
+	[Path] = pointer(Pointer),
+	patch(T, maps:remove(Path, Resource));
+patch([], Resource) ->
+	Resource.
 
 %%----------------------------------------------------------------------
 %%  internal functions

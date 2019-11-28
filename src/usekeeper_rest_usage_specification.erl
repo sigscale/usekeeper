@@ -25,7 +25,7 @@
 
 -export([content_types_accepted/0, content_types_provided/0]).
 -export([post_usage_specification/1, get_usage_specifications/3,
-		delete_usage_specification/1]).
+		delete_usage_specification/1, patch_usage_specification/4]).
 -export([usage_specification/1]).
 
 -include("usage.hrl").
@@ -39,7 +39,7 @@
 		ContentTypes :: list().
 %% @doc Returns list of resource representations accepted.
 content_types_accepted() ->
-	["application/json"].
+	["application/json", "application/merge-patch+json"].
 
 -spec content_types_provided() -> ContentTypes
 	when
@@ -158,6 +158,70 @@ delete_usage_specification(Id) ->
 		{error, _Reason} ->
 			{error, 400}
 	end.
+
+-spec patch_usage_specification(Id, Etag, ContentType, ReqBody) -> Result
+	when
+		Id :: string(),
+		Etag :: undefined | string(),
+		ContentType :: string(),
+		ReqBody :: list(),
+		Result :: {ok, Headers :: [tuple()], Body :: iolist()}
+			| {error, ErrorCode :: integer()} .
+%% @doc Update an existing `Usage Specification'.
+%%
+%% 	Respond to `PATCH /usageManagement/v4/usageSpecification/{Id}' request.
+%%
+patch_usage_specification(Id, Etag, "application/merge-patch+json", ReqBody) ->
+	try
+		case Etag of
+			undefined ->
+				{undefined, zj:decode(ReqBody)};
+			Etag ->
+				{usekeeper_rest:etag(Etag) , zj:decode(ReqBody)}
+		end
+	of
+		{EtagT, {ok, Patch}} ->
+			F = fun() ->
+					case mnesia:read(use_spec, Id, write) of
+						[#use_spec{last_modified = LM}]
+								when EtagT /= undefined, LM /= EtagT ->
+							mnesia:abort(412);
+						[#use_spec{} = UsageSpec] ->
+							case catch usage_specification(usekeeper_rest:patch(Patch,
+									usage_specification(UsageSpec))) of
+								#use_spec{} = US ->
+									TS = erlang:system_time(millisecond),
+									N = erlang:unique_integer([positive]),
+									LM = {TS, N},
+									NewUsageSpec = US#use_spec{last_modified = LM},
+									mnesia:write(use_spec, NewUsageSpec, write),
+									NewUsageSpec;
+								_ ->
+									mnesia:abort(400)
+							end;
+						[] ->
+							mnesia:abort(404)
+					end
+			end,
+			case mnesia:transaction(F) of
+				{atomic, #use_spec{last_modified = LM} = NewUsageSpec} ->
+					Body = zj:encode(usage_specification(NewUsageSpec)),
+					Headers = [{content_type, "application/merge-patch+json"},
+							{etag, usekeeper_rest:etag(LM)}],
+					{ok, Headers, Body};
+				{aborted, Status} when is_integer(Status) ->
+					{error, Status};
+				{aborted, _Reason} ->
+					{error, 500}
+			end;
+		_ ->
+			{error, 400}
+	catch
+		_:_ ->
+			{error, 400}
+	end;
+patch_usage_specification(_, _, "application/json", _) ->
+	{error, 415}.
 
 -spec usage_specification(UsageSpec) -> UsageSpec
 	when

@@ -437,6 +437,7 @@ system {@link //jkernel/config. config} file (releases/%VERSION%/sys.config).
                   mod_usekeeper_rest_post,
                   mod_usekeeper_rest_patch,
                   mod_usekeeper_rest_delete,
+                  mod_usekeeper_rest_patch,
                   mod_get,
 						mod_disk_log]},
             {port, 8080},

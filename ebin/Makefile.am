@@ -16,6 +16,7 @@ beam_DATA = usekeeper_app.beam \
 			mod_usekeeper_rest_post.beam \
 			mod_usekeeper_rest_get.beam \
 			mod_usekeeper_rest_delete.beam \
+			mod_usekeeper_rest_patch.beam \
 			usekeeper_rest_pagination_server.beam \
 			usekeeper_rest_pagination_sup.beam \
 			usekeeper_rest_res_user.beam \
