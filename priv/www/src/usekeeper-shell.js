@@ -93,11 +93,11 @@ class UseKeeper extends PolymerElement {
 							selected="[[page]]"
 							attr-for-selected="name"
 							role="main">
-						<specification-list
+						<usekeeper-spec-list
 								id="specList"
 								loading="{{specLoading}}"
 								name="specView">
-						</specification-list>
+						</usekeeper-spec-list>
 						<usage-list
 								id="usageList"
 								loading="{{usageLoading}}"
@@ -259,7 +259,7 @@ class UseKeeper extends PolymerElement {
 				// import('./usage-list.js');
 				break;
 			case 'specView':
-				// import('./use-spec-list.js');
+				import('./usekeeper-spec-list.js');
 				break;
 			case 'userView':
 				import('./usekeeper-user-list.js');
@@ -279,7 +279,6 @@ class UseKeeper extends PolymerElement {
 	_overFlowMenu() {
 		import('./usekeeper-help.js');
 	}
-
 }
 
 window.customElements.define('usekeeper-shell', UseKeeper);
