@@ -22,7 +22,7 @@
 -copyright('Copyright (c) 2019 SigScale Global Inc.').
 
 -export([content_types_accepted/0, content_types_provided/0, get_params/0,
-		get_user/2, get_users/3, post_user/1, user/1]).
+		get_user/2, get_users/3, post_user/1, delete_user/1, user/1]).
 
 -include_lib("inets/include/mod_auth.hrl").
 -include("usage.hrl").
@@ -40,6 +40,21 @@ content_types_accepted() ->
 %% @doc Provides list of resource representations available.
 content_types_provided() ->
 	["application/json"].
+
+-spec delete_user(Id) -> Result
+	when
+		Id :: string(),
+		Result :: {ok, Headers :: [tuple()], Body :: iolist()}
+			| {error, ErrorCode :: integer()} .
+%% @doc Respond to `DELETE /party/v4/individual/{id}' request and deletes
+%% a usekeeper user. If the deletion is succeeded return true.
+delete_user(Id) ->
+	case usekeeper:delete_user(Id) of
+		ok ->
+			{ok, [], []};
+		{error, _Reason} ->
+			{error, 400}
+	end.
 
 -spec post_user(RequestBody) -> Result
 	when
