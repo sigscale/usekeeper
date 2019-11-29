@@ -252,17 +252,17 @@ usage_specification([description | T], #{"description" := Description} = M,
 		Acc) when is_list(Description) ->
 	usage_specification(T, M, Acc#use_spec{description = Description});
 usage_specification([class_type | T], #use_spec{class_type = Type} = R, Acc)
-      when is_list(Type) ->
-   usage_specification(T, R, Acc#{"@type" => Type});
+		when is_list(Type) ->
+	usage_specification(T, R, Acc#{"@type" => Type});
 usage_specification([class_type | T], #{"@type" := Type} = M, Acc)
-      when is_list(Type) ->
-   usage_specification(T, M, Acc#use_spec{class_type = Type});
+		when is_list(Type) ->
+	usage_specification(T, M, Acc#use_spec{class_type = Type});
 usage_specification([base_type | T], #use_spec{base_type = Type} = R, Acc)
-      when is_list(Type) ->
-   usage_specification(T, R, Acc#{"@baseType" => Type});
+		when is_list(Type) ->
+	usage_specification(T, R, Acc#{"@baseType" => Type});
 usage_specification([base_type | T], #{"@baseType" := Type} = M, Acc)
-      when is_list(Type) ->
-   usage_specification(T, M, Acc#use_spec{base_type = Type});
+		when is_list(Type) ->
+	usage_specification(T, M, Acc#use_spec{base_type = Type});
 usage_specification([start_date | T], #use_spec{start_date = StartDate} = R,
 		Acc) when is_integer(StartDate) ->
 	ValidFor = #{"startDateTime" => usekeeper_rest:iso8601(StartDate)},
