@@ -140,19 +140,17 @@ post_usage_specification(Config) ->
 			++ "\t\t\"startDateTime\": \"2019-01-29T00:00\",\n"
 			++ "\t\t\"endDateTime\": \"2019-12-31T23:59\"\n"
 			++ "\t},\n"
-			++ "\t\"usageSpecCharacteristic\": [\n"
-			++ "\t\t{\n"
-			++ "\t\t\t\"name\": \"" ++ Name ++ "\",\n"
-			++ "\t\t\t\"description\": \"" ++ Description ++ "\",\n"
-			++ "\t\t\t\"configurable\": \"true\",\n"
-			++ "\t\t\t\"usageSpecCharacteristicValue\": [\n"
-			++ "\t\t\t\t{\n"
-			++ "\t\t\t\t\t\"valueType\": \"number\",\n"
-			++ "\t\t\t\t\t\"default\": \"false\"\n"
-			++ "\t\t\t\t}\n"
-			++ "\t\t\t]\n"
-			++ "\t\t}\n"
-			++ "\t]\n"
+			++ "\t\"usageSpecCharacteristic\": {\n"
+			++ "\t\t\"name\": \"" ++ Name ++ "\",\n"
+			++ "\t\t\"description\": \"" ++ Description ++ "\",\n"
+			++ "\t\t\"configurable\": true,\n"
+			++ "\t\t\"usageSpecCharacteristicValue\": [\n"
+			++ "\t\t\t{\n"
+			++ "\t\t\t\t\"valueType\": \"number\",\n"
+			++ "\t\t\t\t\"default\": false\n"
+			++ "\t\t\t}\n"
+			++ "\t\t]\n"
+			++ "\t}\n"
 			++ "}\n",
 	ContentType = "application/json",
 	Accept = {"accept", "application/json"},
@@ -175,10 +173,10 @@ post_usage_specification(Config) ->
 			{ok, Spec}
 	end,
 	{ok, #use_spec{id = ID, name = Name, description = Description,
-			characteristic = [C]}} = UsageSpec,
-	#specification_char{name = Name, description = Description,
-			configurable = true, char_value = [CV]} = C,
-	#spec_char_value{value_type = "number", default = false} = CV.
+			characteristic = Char}} = UsageSpec,
+	#{"name" := Name, "description" := Description,
+			"configurable" := true, "usageSpecCharacteristicValue" := [CV]} = Char,
+	#{"valueType" => "number", "default" => false} == CV.
 
 get_usage_specifications() ->
 	[{userdata, [{doc, "GET Usage Specification collection"}]}].
@@ -257,20 +255,7 @@ is_usage_spec(#{"id" := Id, "name" := Name, "description" := Description,
 		"validFor" := #{"startDateTime" := StartTime, "endDateTime" := EndTime},
 		"usageSpecCharacteristic" := UsageSpecChars})
 		when is_list(Id), is_list(Name), is_list(Description),
-		is_list(StartTime), is_list(EndTime), is_list(UsageSpecChars) ->
-	true = lists:all(fun is_usage_spec_char/1, UsageSpecChars);
-is_usage_spec(_) ->
-	false.
-
-is_usage_spec_char(#{"name" := Name, "description" := Description,
-		"configurable" := "true", "usageSpecCharacteristicValue" := CharValue})
-		when is_list(Name), is_list(Description), is_list(CharValue) ->
-	true = lists:all(fun is_usage_spec_char_val/1, CharValue);
-is_usage_spec_char(_) ->
-	false.
-
-is_usage_spec_char_val(#{"valueType" := Type, "default" := Default})
-		when is_list(Type), is_list(Default) ->
+		is_list(StartTime), is_list(EndTime), is_map(UsageSpecChars) ->
 	true;
-is_usage_spec_char_val(_) ->
+is_usage_spec(_) ->
 	false.
