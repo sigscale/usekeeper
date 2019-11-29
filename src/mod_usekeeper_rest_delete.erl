@@ -70,6 +70,9 @@ do(#mod{method = Method, request_uri = Uri, data = Data} = ModData) ->
 do_delete(Resource, ModData,
 		["usageManagement", "v4", "usageSpecification", Identity]) ->
 	do_response(ModData, Resource:delete_usage_specification(Identity));
+do_delete(Resource, ModData,
+		["party", "v4", "individual", Identity]) ->
+	do_response(ModData, Resource:delete_user(Identity));
 do_delete(_Resource, #mod{data = Data} = _ModData, _) ->
 	Response = "<h2>HTTP Error 404 - Not Found</h2>",
 	{proceed, [{response, {404, Response}} | Data]}.
