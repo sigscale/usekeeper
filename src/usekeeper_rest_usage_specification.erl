@@ -274,17 +274,14 @@ usage_specification([end_date | T],
 usage_specification([characteristic | T],
 		#use_spec{characteristic = UsageSpecChar} = R, Acc)
 		when is_map(UsageSpecChar) ->
-erlang:display({?MODULE, ?LINE, UsageSpecChar}),
 	usage_specification(T, R,
 			Acc#{"usageSpecCharacteristic" => UsageSpecChar});
 usage_specification([characteristic | T],
 		#{"usageSpecCharacteristic" := UsageSpecChar} = M, Acc)
 		when is_map(UsageSpecChar) ->
-erlang:display({?MODULE, ?LINE, UsageSpecChar}),
 	usage_specification(T, M,
 			Acc#use_spec{characteristic = UsageSpecChar});
 usage_specification([_H | T], R, Acc) ->
-erlang:display({?MODULE, ?LINE, _H}),
 	usage_specification(T, R, Acc);
 usage_specification([], _, Acc) ->
 	Acc.
