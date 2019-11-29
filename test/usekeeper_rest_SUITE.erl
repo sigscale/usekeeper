@@ -132,10 +132,14 @@ post_usage_specification(Config) ->
 	PathUsageSpec = ?PathUsage ++ "usageSpecification",
 	CollectionUrl = HostUrl ++ PathUsageSpec,
 	Name = random_string(10),
+	BaseType = random_string(5),
+	ClassType = random_string(10),
 	Description = random_string(25),
 	RequestBody = "{\n"
 			++ "\t\"name\": \"" ++ Name ++ "\",\n"
 			++ "\t\"description\": \"" ++ Description ++ "\",\n"
+			++ "\t\"@baseType\": \"" ++ BaseType ++ "\",\n"
+			++ "\t\"@type\": \"" ++ ClassType ++ "\",\n"
 			++ "\t\"validFor\": {\n"
 			++ "\t\t\"startDateTime\": \"2019-01-29T00:00\",\n"
 			++ "\t\t\"endDateTime\": \"2019-12-31T23:59\"\n"
@@ -173,7 +177,7 @@ post_usage_specification(Config) ->
 			{ok, Spec}
 	end,
 	{ok, #use_spec{id = ID, name = Name, description = Description,
-			characteristic = Char}} = UsageSpec,
+			class_type = ClassType, base_type = BaseType, characteristic = Char}} = UsageSpec,
 	#{"name" := Name, "description" := Description,
 			"configurable" := true, "usageSpecCharacteristicValue" := [CV]} = Char,
 	#{"valueType" => "number", "default" => false} == CV.
