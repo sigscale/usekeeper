@@ -123,11 +123,13 @@ class specList extends PolymerElement {
 					if(request.response[index].description) {
 						newRecord.description = request.response[index].description;
 					}
-					if(request.response[index].validFor.startDateTime) {
-						newRecord.start = request.response[index].validFor.startDateTime;
-					}
-					if(request.response[index].validFor.endDateTime) {
-						newRecord.end = request.response[index].validFor.endDateTime;
+					if(request.response[index].validFor) {
+						if(request.response[index].validFor.startDateTime) {
+							newRecord.start = request.response[index].validFor.startDateTime;
+						}
+						if(request.response[index].validFor.endDateTime) {
+							newRecord.end = request.response[index].validFor.endDateTime;
+						}
 					}
 					if(request.response[index].classType) {
 						newRecord.type = request.response[index].classType;
