@@ -13,6 +13,7 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import {} from '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
+import '@vaadin/vaadin-grid/vaadin-grid-column-group.js';
 import '@polymer/paper-fab/paper-fab.js';
 import './usekeeper-icons.js';
 import './style-element.js';
@@ -42,42 +43,47 @@ class specList extends PolymerElement {
 						</template>
 					</template>
 				</dl>
-				<vaadin-grid-column>
-					<template class="header">
-						Start Time
-					</template>
-					<template>[[item.start]]</template>
-				</vaadin-grid-column>
-				<vaadin-grid-column>
-					<template class="header">
-						End Time
-					</template>
-					<template>[[item.end]]</template>
-				</vaadin-grid-column>
-				<vaadin-grid-column>
+				<vaadin-grid-column width="6ex" flex-grow="10">
 					<template class="header">
 						Name 
 					</template>
 					<template>[[item.name]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column>
+				<vaadin-grid-column width="10ex" flex-grow="20">
 					<template class="header">
 						Description 
 					</template>
 					<template>[[item.description]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column>
+				<vaadin-grid-column width="6ex" flex-grow="5">
 					<template class="header">
-						Type
+						Class
 					</template>
 					<template>[[item.class]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column>
+				<vaadin-grid-column width="8ex">
 					<template class="header">
 						Base
 					</template>
 					<template>[[item.base]]</template>
 				</vaadin-grid-column>
+				<vaadin-grid-column-group>
+					<template class="header">
+						<div class="grouptitle">Validity</div>
+					</template>
+					<vaadin-grid-column width="12ex" flex-grow="10">
+						<template class="header">
+							Start
+						</template>
+					<template>[[item.start]]</template>
+					</vaadin-grid-column>
+					<vaadin-grid-column width="12ex" flex-grow="10">
+						<template class="header">
+							End
+						</template>
+						<template>[[item.end]]</template>
+					</vaadin-grid-column>
+				</vaadin-grid-column-group>
 			</vaadin-grid>
 			<div class="add-button">
 				<paper-fab
@@ -174,11 +180,11 @@ class specList extends PolymerElement {
 							newRecord.end = request.response[index].validFor.endDateTime;
 						}
 					}
-					if(request.response[index].classType) {
-						newRecord.type = request.response[index].classType;
+					if(request.response[index]["@type"]) {
+						newRecord.class = request.response[index]["@type"];
 					}
-					if(request.response[index].baseType) {
-						newRecord.base = request.response[index].baseType;
+					if(request.response[index]["@baseType"]) {
+						newRecord.base = request.response[index]["@baseType"];
 					}
 					if(request.response[index].usageSpecCharacteristic) {
 						newRecord.usageSpecCharacteristic = new Array();
