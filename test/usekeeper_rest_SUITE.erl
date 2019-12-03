@@ -118,7 +118,8 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[post_usage_specification, get_usage_specifications, delete_usage_specification].
+	[post_usage_specification, get_usage_specifications, delete_usage_specification,
+			patch_usage_specification].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -229,6 +230,60 @@ delete_usage_specification(Config) ->
 		{atomic, []} ->
 			{error, not_found}
 	end.
+
+patch_usage_specification() ->
+	[{userdata, [{doc,"Updates fields in usage specification for given Id"}]}].
+
+patch_usage_specification(Config) ->
+	Name = "DataSpec",
+	CharValueSpec = #{"valueType" => "number", "from" => 1, "to" => 999},
+	Characteristic = #{"name" => "originatingCountryCode",
+			"configurable" => true,
+			"usageSpecCharacteristicValue" => [CharValueSpec]},
+	UsageSpec = #use_spec{name = "VoiceSpec", start_date = 1575027813168,
+			end_date = 1675027813493, characteristic = Characteristic},
+	{ok, #use_spec{id = Id}} = usekeeper:add_usage_spec(UsageSpec),
+	Description = "Country code of the caller",
+	RequestBody = "[\n"
+			++ "\t{\n"
+			++ "\t\t\"op\": \"add\",\n"
+			++ "\t\t\"path\": \"/description\",\n"
+			++ "\t\t\"value\": \"" ++ Description ++ "\"\n"
+			++ "\t},\n"
+			++ "\t{\n"
+			++ "\t\t\"op\": \"add\",\n"
+			++ "\t\t\"path\": \"/name\",\n"
+			++ "\t\t\"value\": \"" ++ Name ++ "\"\n"
+			++ "\t},\n"
+			++ "\t{\n"
+			++ "\t\t\"op\": \"replace\",\n"
+			++ "\t\t\"path\": \"/description\",\n"
+			++ "\t\t\"value\": \"UPDATED\"\n"
+			++ "\t}\n"
+			++ "]\n",
+	HostUrl = ?config(host_url, Config),
+	CollectionUrl = HostUrl ++ ?PathUsage ++ "usageSpecification/" ++ Id,
+	Accept = "application/json",
+	ContentType = "application/merge-patch+json",
+	Request = {CollectionUrl, [Accept, auth_header()], ContentType, RequestBody},
+	{ok, Result} = httpc:request(patch, Request, [], []),
+	{{"HTTP/1.1", 200, _OK}, Headers, ResponseBody} = Result,
+	{_, "application/merge-patch+json"} = lists:keyfind("content-type", 1, Headers),
+	ContentLength = integer_to_list(length(ResponseBody)),
+	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
+	{ok, #{"id" := ID}} = zj:decode(ResponseBody),
+	F = fun() ->
+			mnesia:read(use_spec, ID, read)
+	end,
+	{ok, US}= case mnesia:transaction(F) of
+		{aborted, Reason} ->
+			{error, Reason};
+		{atomic, []} ->
+			{error, not_found};
+		{atomic, [Spec]} ->
+			{ok, Spec}
+	end,
+	#use_spec{id = ID, name = Name, description = "UPDATED"} = US.
 
 %%---------------------------------------------------------------------
 %%  Internal functions
