@@ -10,8 +10,10 @@
 
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import {} from '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
+import '@vaadin/vaadin-grid/vaadin-grid-column-group.js';
 import '@polymer/paper-fab/paper-fab.js';
 import './usekeeper-icons.js';
 import './style-element.js';
@@ -22,43 +24,66 @@ class specList extends PolymerElement {
 			<style include="style-element">
 			</style>
 			<vaadin-grid id="specGrid"
-					loading="{{loading}}">
-            <vaadin-grid-column>
-               <template class="header">
-                  Start Time
-               </template>
-               <template>[[item.start]]</template>
-            </vaadin-grid-column>
-            <vaadin-grid-column>
-               <template class="header">
-                  End Time
-               </template>
-               <template>[[item.end]]</template>
-            </vaadin-grid-column>
-				<vaadin-grid-column>
+					loading="{{loading}}"
+					active-item="{{activeItem}}">
+				<template class="row-details">
+					<dl class="details">
+						<template is="dom-if" if="{{item.id}}">
+							<dt><b>Id</b></dt>
+							<dd>{{item.id}}</dd>
+						</template>
+					</dl>
+				</template>
+				<h3 class="specH3">Specification Details:</h3>
+				<dl class="details">
+					<template is="dom-if" if="{{item.usageSpecCharacteristic}}">
+						<template is="dom-repeat" items="{{item.usageSpecCharacteristic}}" as="detail">
+							<dt>{{detail.name}}</dt>
+							<dd>{{detail.value}}</dd>
+						</template>
+					</template>
+				</dl>
+				<vaadin-grid-column width="6ex" flex-grow="10">
 					<template class="header">
 						Name 
 					</template>
 					<template>[[item.name]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column>
+				<vaadin-grid-column width="10ex" flex-grow="20">
 					<template class="header">
 						Description 
 					</template>
 					<template>[[item.description]]</template>
 				</vaadin-grid-column>
-            <vaadin-grid-column>
-               <template class="header">
-                  Type
-               </template>
-               <template>[[item.class]]</template>
-            </vaadin-grid-column>
-            <vaadin-grid-column>
-               <template class="header">
-                  Base
-               </template>
-               <template>[[item.base]]</template>
-            </vaadin-grid-column>
+				<vaadin-grid-column width="6ex" flex-grow="5">
+					<template class="header">
+						Class
+					</template>
+					<template>[[item.class]]</template>
+				</vaadin-grid-column>
+				<vaadin-grid-column width="8ex">
+					<template class="header">
+						Base
+					</template>
+					<template>[[item.base]]</template>
+				</vaadin-grid-column>
+				<vaadin-grid-column-group>
+					<template class="header">
+						<div class="grouptitle">Validity</div>
+					</template>
+					<vaadin-grid-column width="12ex" flex-grow="10">
+						<template class="header">
+							Start
+						</template>
+					<template>[[item.start]]</template>
+					</vaadin-grid-column>
+					<vaadin-grid-column width="12ex" flex-grow="10">
+						<template class="header">
+							End
+						</template>
+						<template>[[item.end]]</template>
+					</vaadin-grid-column>
+				</vaadin-grid-column-group>
 			</vaadin-grid>
 			<div class="add-button">
 				<paper-fab
@@ -80,9 +105,33 @@ class specList extends PolymerElement {
 				type: Boolean,
 				notify: true
 			},
+			activeItem: {
+				type: Boolean,
+				observer: '_activeItemChanged'
+			},
 			etag: {
-			type: String,
+				type: String,
 				value: null
+			}
+		}
+	}
+
+	_activeItemChanged(item, last) {
+		if(item || last) {
+			var grid = this.shadowRoot.getElementById('specGrid');
+			var current;
+			if(item == null) {
+				current = last;
+			} else {
+				current = item
+			}
+			function checkExist(spec) {
+				return spec.id == current.id;
+			}
+			if(grid.detailsOpenedItems && grid.detailsOpenedItems.some(checkExist)) {
+				grid.closeItemDetails(current);
+			} else {
+				grid.openItemDetails(current);
 			}
 		}
 	}
@@ -123,17 +172,26 @@ class specList extends PolymerElement {
 					if(request.response[index].description) {
 						newRecord.description = request.response[index].description;
 					}
-					if(request.response[index].validFor.startDateTime) {
-						newRecord.start = request.response[index].validFor.startDateTime;
+					if(request.response[index].validFor) {
+						if(request.response[index].validFor.startDateTime) {
+							newRecord.start = request.response[index].validFor.startDateTime;
+						}
+						if(request.response[index].validFor.endDateTime) {
+							newRecord.end = request.response[index].validFor.endDateTime;
+						}
 					}
-					if(request.response[index].validFor.endDateTime) {
-						newRecord.end = request.response[index].validFor.endDateTime;
+					if(request.response[index]["@type"]) {
+						newRecord.class = request.response[index]["@type"];
 					}
-					if(request.response[index].classType) {
-						newRecord.type = request.response[index].classType;
+					if(request.response[index]["@baseType"]) {
+						newRecord.base = request.response[index]["@baseType"];
 					}
-					if(request.response[index].baseType) {
-						newRecord.base = request.response[index].baseType;
+					if(request.response[index].usageSpecCharacteristic) {
+						newRecord.usageSpecCharacteristic = new Array();
+						var specObj = request.response[index].usageSpecCharacteristic;
+						for(var Name in specObj) {
+							newRecord.usageSpecCharacteristic.push({name: Name, value: specObj[Name]});
+						}
 					}
 					vaadinItems[index] = newRecord;
 				}
