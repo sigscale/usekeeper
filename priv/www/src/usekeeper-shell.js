@@ -147,6 +147,7 @@ class UseKeeper extends PolymerElement {
 			<!-- Model Definitions -->
 			<usekeeper-help id="getHelp" active="[[overFlowActive]]"></usekeeper-help>
 			<usekeeper-user-add id="userAdd" active="[[overFlowActive]]"></usekeeper-user-add>
+			<usekeeper-spec-add id="specAdd" active="[[overFlowActive]]"></usekeeper-spec-add>
 		`;
 	}
 
@@ -260,6 +261,7 @@ class UseKeeper extends PolymerElement {
 				break;
 			case 'specView':
 				import('./usekeeper-spec-list.js');
+				import('./usekeeper-spec-add.js');
 				break;
 			case 'userView':
 				import('./usekeeper-user-list.js');
