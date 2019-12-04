@@ -20,7 +20,8 @@ beam_DATA = usekeeper_app.beam \
 			usekeeper_rest_pagination_server.beam \
 			usekeeper_rest_pagination_sup.beam \
 			usekeeper_rest_res_user.beam \
-			usekeeper.beam
+			usekeeper.beam \
+			usekeeper_log.beam
 
 %.beam:$(top_srcdir)/src/%.erl	$(top_srcdir)/include/usage.hrl
 	$(ERLC) $(ERLCFLAGS) -I $(top_srcdir)/include -I $(top_builddir)/include $<

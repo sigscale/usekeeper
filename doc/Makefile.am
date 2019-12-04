@@ -15,7 +15,8 @@ modhtml = usekeeper_app.html \
 			usekeeper_rest_pagination_server.html \
 			usekeeper_rest_pagination_sup.html \
 			usekeeper_rest_res_user.html \
-			usekeeper.html
+			usekeeper.html \
+			usekeeper_log.html
 
 doc_DATA = overview.edoc $(modhtml) \
 		modules-frame.html overview-summary.html \
