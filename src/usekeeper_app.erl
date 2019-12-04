@@ -445,10 +445,10 @@ force([]) ->
 	ok.
 
 -spec create_dir(ExportDir) -> Result
-   when
-      ExportDir :: string(),
-      Result :: ok | {error, Reason},
-      Reason :: term().
+	when
+		ExportDir :: string(),
+		Result :: ok | {error, Reason},
+		Reason :: term().
 %% @doc Create the MIB directory.
 create_dir(ExportDir) ->
 	case file:make_dir(ExportDir) of
