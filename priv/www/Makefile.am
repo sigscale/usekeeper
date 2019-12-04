@@ -10,6 +10,7 @@ LINKS = index.html manifest.json images src
 MODULES = usekeeper-shell.js \
 		usekeeper-help.js \
 		usekeeper-spec-list.js \
+		usekeeper-spec-add.js \
 		usekeeper-user-add.js \
 		usekeeper-user-list.js
 

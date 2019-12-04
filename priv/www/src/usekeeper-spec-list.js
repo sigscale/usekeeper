@@ -234,6 +234,9 @@ class specList extends PolymerElement {
 			ajax.generateRequest().completes.then(handleAjaxResponse, handleAjaxError);
 		}
 	}
+	showAddSpecModal(event) {
+		 document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-add').shadowRoot.getElementById('addSpecModal').open();
+	}
 }
 
 window.customElements.define('usekeeper-spec-list', specList);
