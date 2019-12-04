@@ -102,7 +102,12 @@ class specAdd extends PolymerElement {
 		ajax.generateRequest();
 	}
 
-	_userAddResponse() {
+	cancelSpec() {
+		this.$.name.value = null;
+		this.$.desc.value = null;
+	}
+
+	_specAddResponse() {
 		document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-add').shadowRoot.getElementById('addSpecModal').close();
 	}
 }
