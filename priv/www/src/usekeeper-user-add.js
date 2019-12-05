@@ -33,7 +33,7 @@ class userAdd extends PolymerElement {
 			</paper-toolbar>
 				<paper-input
 					id="username"
-					label="User Name"
+					label="Username"
 					value="{{user.username}}">
 				</paper-input>
 				<paper-input
@@ -63,13 +63,6 @@ class userAdd extends PolymerElement {
 						dialog-dismiss
 						on-tap="cancelSpec">
 							Cancel
-					</paper-button>
-					<paper-button
-						toggles
-						raised
-						class="delete-button"
-						on-tap="_deleteSpec">
-							Delete
 					</paper-button>
 				</div>
 		</paper-dialog>
@@ -132,6 +125,17 @@ class userAdd extends PolymerElement {
 		use.characteristic = [charObj, charObj1, charObj2, charObj3];
 		ajax.body = JSON.stringify(use);
 		ajax.generateRequest();
+		this.$.username.value = null;
+		this.$.password.value = null;
+		this.$.firstname.value = null;
+		this.$.lastname.value = null;
+	}
+
+	cancelSpec() {
+		this.$.username.value = null;
+		this.$.password.value = null;
+		this.$.firstname.value = null;
+		this.$.lastname.value = null;
 	}
 
 	_userAddResponse() {

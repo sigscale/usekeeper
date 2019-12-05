@@ -83,18 +83,38 @@ styleElement.innerHTML = `<template>
 			#restError {
 				--paper-toast-background-color: var(--paper-red-a400);
 			}
-			paper-dialog {
-				position: fixed;
-				min-width: 20em;
-				right: -36px;
-				top: 41px;
-				overflow: auto;
-				padding: 0px;
-				display: inline-grid;
-			}
-			paper-dialog > *:first-child {
-				margin-top: 0px;
-			}
+         .dialog {
+            overflow: auto;
+         }
+         .dialogOne {
+            position: fixed;
+            min-width: 20em;
+            right: -36px;
+            top: 41px;
+            overflow: auto;
+            padding: 0px;
+            display: inline-grid;
+         }
+         paper-dialog > *:first-child {
+            margin-top: 0px;
+         }
+         paper-dialog iron-collapse {
+            --paper-input-container-underline: {
+               display: none;
+            };
+         }
+         paper-dialog iron-collapse > div hr {
+            border-top: 1px solid blue;
+         }
+         paper-dialog iron-collapse > div:first-child hr {
+            display: none;
+         }
+         paper-dialog iron-collapse > div {
+            padding-top: 25px
+         }
+         paper-dialog iron-collapse > div:first-child {
+            padding-top: 0px
+         }
 			paper-toolbar {
 				color: white;
 				background-color: #bc5100;
