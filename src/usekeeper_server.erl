@@ -53,8 +53,13 @@
 %% @private
 %%
 init([Sup] = _Args) ->
-	process_flag(trap_exit, true),
-	{ok, #state{sup = Sup}}.
+	case usekeeper_log:usage_open() of
+		ok ->
+			process_flag(trap_exit, true),
+			{ok, #state{sup = Sup}};
+		{error, Reason} ->
+			{stop, Reason}
+	end.
 
 -spec handle_call(Request, From, State) -> Result
 	when
