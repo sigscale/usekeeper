@@ -115,14 +115,6 @@ start5(Profile) ->
 	{ok, Options} = application:get_env(hub_options),
 	case httpc:set_options(Options, Profile) of
 		ok ->
-			start6();
-		{error, Reason} ->
-			{error, Reason}
-	end.
-%% @hidden
-start6() ->
-	case usekeeper_log:usage_open() of
-		ok ->
 			supervisor:start_link(usekeeper_sup, []);
 		{error, Reason} ->
 			{error, Reason}
