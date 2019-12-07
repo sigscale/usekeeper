@@ -29,8 +29,9 @@
 -export([add_user2/0, add_user2/1, add_user4/0, add_user4/1,
 		get_user/0, get_user/1, list_users/0, list_users/1,
 		delete_user/0, delete_user/1,
-		add_usage_spec/0, add_usage_spec/1,
-		delete_usage_spec/0, delete_usage_spec/1]).
+		add_usage_spec/0, add_usage_spec/1, delete_usage_spec/0,
+		delete_usage_spec/1,
+		add_usage/0, add_usage/1]).
 
 -include("usage.hrl").
 -include_lib("common_test/include/ct.hrl").
@@ -86,7 +87,7 @@ sequences() ->
 %%
 all() ->
 	[add_user2, add_user4, get_user, list_users, delete_user,
-			add_usage_spec, delete_usage_spec].
+			add_usage_spec, delete_usage_spec, add_usage].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -201,6 +202,32 @@ delete_usage_spec(_Config) ->
 		{atomic, []} ->
 			{error, not_found}
 	end.
+
+add_usage() ->
+	[{userdata, [{doc, "Log a new Usage Event"}]}].
+
+add_usage(_Config) ->
+	Usage = usekeeper_test_lib:voice_usage(),
+	ok = usekeeper:add_usage(Usage),
+	Fany = fun(E) when is_integer(element(1, E)),
+					is_integer(element(2, E)), is_map(element(3, E)) ->
+				true;
+			(_) ->
+				false
+	end,
+	Find = fun(_F, {error, Reason}) ->
+				ct:fail(Reason);
+			(F, {Cont, Chunk}) ->
+				case lists:any(Fany, Chunk) of
+					false ->
+						F(F, disk_log:chunk(ocs_acct, Cont));
+					true ->
+						true
+				end;
+			(_F, eof) ->
+				false
+	end,
+	true = Find(Find, disk_log:chunk(usage, start)).
 
 %%---------------------------------------------------------------------
 %%  Internal functions

@@ -3,7 +3,7 @@
 %%%
 -module(usekeeper_test_lib).
 
--export([initialize_db/0, start/0, stop/0, voice_spec/0]).
+-export([initialize_db/0, start/0, stop/0, voice_spec/0, voice_usage/0]).
 
 -include("usage.hrl").
 
@@ -140,3 +140,23 @@ voice_spec() ->
 					"usageSpecChar6" => CharSpec6, "usageSpecChar7" => CharSpec7,
 					"usageSpecChar8" => CharSpec8}}.
 
+voice_usage() ->
+	Name = "VoiceUsage",
+	Description = "Specification for voice call usage",
+	StartDate = 1366389743000,
+	EndDate = 4085510400000,
+	UsageChar1 = #{"name" => "poolNumber", "value" => 1},
+	UsageChar2 = #{"name" => "characteristicType", "value" => "Reserved"},
+	UsageChar3 = #{"name" => "value", "value" => 2},
+	UsageChar4 = #{"name" => "unit", "value" => "GHZ"},
+	RelatedParty = #{"id" => 1, "role" => "customer"},
+	Rated = #{"tag" => "Usage", "amount_type" => "Total",
+			"tax_included_amount" => 12, "tax_excluded_amount" => 10,
+			"tax_rate" => 10, "is_tax_exempt" => false, "currency" => "EUR"},
+	#{"name" => Name, "description" => Description,
+			"start_date" => StartDate, "end_date" => EndDate, "status" => received,
+			"type" => "CloudCpuUsage",
+			"characteristic" => #{"usageChar1" => UsageChar1,
+					"usageChar2" => UsageChar2, "usageChar3" => UsageChar3,
+					"usageChar4" => UsageChar4},
+			"related_party" => RelatedParty, "rated" => Rated}.

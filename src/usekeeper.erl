@@ -23,7 +23,8 @@
 
 %% export the usekeeper public API
 -export([add_user/2, add_user/4, list_users/0, get_user/1, delete_user/1,
-		add_usage_spec/1, delete_usage_spec/1, query/6]).
+		add_usage_spec/1, delete_usage_spec/1, query/6,
+		add_usage/1]).
 
 %% export the usekeeper private API
 -export([]).
@@ -288,6 +289,19 @@ query3(Cont, Objects, undefined, []) ->
 	{Cont, Objects};
 query3(Cont, Objects, Total, []) ->
 	{Cont, Objects, Total}.
+
+-spec add_usage(Usage) -> Result
+	when
+		Usage :: usage(),
+		Result :: {ok, UsageLog} | {error, Reason},
+		UsageLog :: usage_log(),
+		Reason :: term().
+%% @doc Log a new Usage Event.
+add_usage(Usage) ->
+	TS = erlang:system_time(millisecond),
+	N = erlang:unique_integer([positive]),
+	UsageLog = list_to_tuple([TS, N, Usage]),
+	disk_log:log(usage, UsageLog).
 
 %%----------------------------------------------------------------------
 %%  internal functions
