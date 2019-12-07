@@ -1,5 +1,5 @@
 [{usekeeper,
-      []},
+      [{usage_log_dir, "log_usage"}]},
 {inets,
       [{services,
          [{httpd,
