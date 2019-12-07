@@ -127,7 +127,7 @@ class userList extends PolymerElement {
 		var handleAjaxError = function(error) {
 			userList.etag = null;
 			var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
-			toast.text = "error";
+			toast.text = error;
 			toast.open();
 			if(!grid.size) {
 				grid.size = 0;
