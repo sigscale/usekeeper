@@ -301,7 +301,12 @@ add_usage(Usage) ->
 	TS = erlang:system_time(millisecond),
 	N = erlang:unique_integer([positive]),
 	UsageLog = list_to_tuple([TS, N, Usage]),
-	disk_log:log(usage, UsageLog).
+	case disk_log:log(usage, UsageLog) of
+		ok ->
+			{ok, UsageLog};
+		{error, Reason} ->
+			{error, Reason}
+	end.
 
 %%----------------------------------------------------------------------
 %%  internal functions

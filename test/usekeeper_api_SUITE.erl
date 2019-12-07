@@ -208,7 +208,7 @@ add_usage() ->
 
 add_usage(_Config) ->
 	Usage = usekeeper_test_lib:voice_usage(),
-	ok = usekeeper:add_usage(Usage),
+	{ok, _UsageLog} = usekeeper:add_usage(Usage),
 	Fany = fun(E) when is_integer(element(1, E)),
 					is_integer(element(2, E)), is_map(element(3, E)) ->
 				true;
