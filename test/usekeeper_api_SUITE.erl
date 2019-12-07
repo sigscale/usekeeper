@@ -220,7 +220,7 @@ add_usage(_Config) ->
 			(F, {Cont, Chunk}) ->
 				case lists:any(Fany, Chunk) of
 					false ->
-						F(F, disk_log:chunk(ocs_acct, Cont));
+						F(F, disk_log:chunk(usage, Cont));
 					true ->
 						true
 				end;

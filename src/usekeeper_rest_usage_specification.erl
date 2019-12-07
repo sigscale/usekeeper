@@ -1,4 +1,4 @@
-%%% usekeeper.erl
+%%% usekeeper_rest_usage_specification.erl
 %%% vim: ts=3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% @copyright 2019 SigScale Global Inc.
