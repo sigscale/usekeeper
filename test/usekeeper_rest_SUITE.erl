@@ -119,7 +119,7 @@ sequences() ->
 %%
 all() ->
 	[post_usage_specification, get_usage_specifications, delete_usage_specification,
-			patch_usage_specification].
+			patch_usage_specification, post_usage].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -284,6 +284,54 @@ patch_usage_specification(Config) ->
 			{ok, Spec}
 	end,
 	#use_spec{id = ID, name = Name, description = "UPDATED"} = US.
+
+post_usage() ->
+	[{userdata, [{doc, "POST to Usage collection"}]}].
+
+post_usage(Config) ->
+	HostUrl = ?config(host_url, Config),
+	PathUsageSpec = ?PathUsage ++ "usage",
+	CollectionUrl = HostUrl ++ PathUsageSpec,
+	Description = random_string(25),
+	RequestBody = "{\n"
+			++ "\t\"type\": \"Voice\",\n"
+			++ "\t\"description\": \"" ++ Description ++ "\",\n"
+			++ "\t\"status\": \"rated\",\n"
+			++ "\t\"usageSpecification\": {\n"
+			++ "\t\t\"id\": \"29\",\n"
+			++ "\t\t\"name\": \"Voice usage specification\"\n"
+			++ "\t\t},\n"
+			++ "\t\"usageCharacteristic\": [\n"
+			++ "\t\t{\n"
+			++ "\t\t\"name\": \"originatingCountryCode\",\n"
+			++ "\t\t\"value\": \"43\",\n"
+			++ "\t\t},\n"
+			++ "\t\t{\n"
+			++ "\t\t\"name\": \"destinationCountryCode\",\n"
+			++ "\t\t\"value\": \"49\"\n"
+			++ "\t\t}\n"
+			++ "\t],\n"
+			++ "\t\"ratedProductUsage\": [\n"
+			++ "\t\t{\n"
+			++ "\t\t\"usageRatingTag\": \"Usage\",\n"
+			++ "\t\t\"ratingAmountType\": \"Total\",\n"
+			++ "\t\t\"taxRate\": \"20\",\n"
+			++ "\t\t\"currencyCode\": \"EUR\"\n"
+			++ "\t\t}\n"
+			++ "\t]\n"
+			++ "}\n",
+	ContentType = "application/json",
+	Accept = {"accept", "application/json"},
+	Request = {CollectionUrl, [Accept, auth_header()], ContentType, RequestBody},
+	{ok, Result} = httpc:request(post, Request, [], []),
+	{{"HTTP/1.1", 201, _Created}, Headers, ResponseBody} = Result,
+	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
+	ContentLength = integer_to_list(length(ResponseBody)),
+	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
+	{ok, [TS, Int, Usage]} = zj:decode(ResponseBody),
+	true = is_integer(TS),
+	true = is_integer(Int),
+	true = is_map(Usage).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
