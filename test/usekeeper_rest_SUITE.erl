@@ -119,11 +119,26 @@ sequences() ->
 %%
 all() ->
 	[post_usage_specification, get_usage_specifications, delete_usage_specification,
-			patch_usage_specification].
+	patch_usage_specification, get_users].
 
 %%---------------------------------------------------------------------
 %%  Test cases
 %%---------------------------------------------------------------------
+
+get_users() ->
+   [{userdata, [{doc, "Get the user collection."}]}].
+
+get_users(Config) ->
+   HostUrl = ?config(host_url, Config),
+   CollectionUrl = HostUrl ++ "/party/v4/individual",
+   Accept = {"accept", "application/json"},
+   Request = {CollectionUrl, [Accept, auth_header()]},
+   {ok, Result} = httpc:request(get, Request, [], []),
+   {{"HTTP/1.1", 200, _OK}, Headers, ResponseBody} = Result,
+   {_, "application/json"} = lists:keyfind("content-type", 1, Headers),
+   ContentLength = integer_to_list(length(ResponseBody)),
+   {_, ContentLength} = lists:keyfind("content-length", 1, Headers).
+
 
 post_usage_specification() ->
 	[{userdata, [{doc, "POST to Resource collection"}]}].
