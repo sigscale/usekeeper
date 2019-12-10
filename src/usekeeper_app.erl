@@ -218,7 +218,7 @@ install2(Nodes) ->
 	end.
 %% @hidden
 install3(Nodes, Acc) ->
-	case mnesia:create_table(use_spec, [{ram_copies, Nodes},
+	case mnesia:create_table(use_spec, [{disc_copies, Nodes},
 			{attributes, record_info(fields, use_spec)}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new usage specification table.~n"),
