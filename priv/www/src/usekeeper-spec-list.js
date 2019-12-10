@@ -26,23 +26,6 @@ class specList extends PolymerElement {
 			<vaadin-grid id="specGrid"
 					loading="{{loading}}"
 					active-item="{{activeItem}}">
-				<template class="row-details">
-					<dl class="details">
-						<template is="dom-if" if="{{item.id}}">
-							<dt><b>Id</b></dt>
-							<dd>{{item.id}}</dd>
-						</template>
-					</dl>
-				</template>
-				<h3 class="specH3">Specification Details:</h3>
-				<dl class="details">
-					<template is="dom-if" if="{{item.usageSpecCharacteristic}}">
-						<template is="dom-repeat" items="{{item.usageSpecCharacteristic}}" as="detail">
-							<dt>{{detail.name}}</dt>
-							<dd>{{detail.value}}</dd>
-						</template>
-					</template>
-				</dl>
 				<vaadin-grid-column width="6ex" flex-grow="10">
 					<template class="header">
 						Name 
@@ -107,6 +90,7 @@ class specList extends PolymerElement {
 			},
 			activeItem: {
 				type: Boolean,
+				notify: true,
 				observer: '_activeItemChanged'
 			},
 			etag: {
@@ -117,22 +101,16 @@ class specList extends PolymerElement {
 	}
 
 	_activeItemChanged(item, last) {
-		if(item || last) {
-			var grid = this.shadowRoot.getElementById('specGrid');
-			var current;
-			if(item == null) {
-				current = last;
-			} else {
-				current = item
-			}
-			function checkExist(spec) {
-				return spec.id == current.id;
-			}
-			if(grid.detailsOpenedItems && grid.detailsOpenedItems.some(checkExist)) {
-				grid.closeItemDetails(current);
-			} else {
-				grid.openItemDetails(current);
-			}
+		if(item) {
+			var grid = this.$.specGrid;
+			grid.selectedItems = item ? [item] : [];
+			var updateSpec = document.querySelector('usekeeper-shell').shadowRoot.getElementById('updateSpec');
+			updateSpec.shadowRoot.getElementById('updateSpecModal').open();
+			updateSpec.shadowRoot.getElementById('updateSpecId').value = item.id;
+			updateSpec.shadowRoot.getElementById('updateSpecName').value = item.name;
+			updateSpec.shadowRoot.getElementById('updateSpecDesc').value = item.description;
+			updateSpec.shadowRoot.getElementById('updateSpecType').value = item.class;
+			updateSpec.shadowRoot.getElementById('updateSpecBase').value = item.base;
 		}
 	}
 

@@ -98,11 +98,11 @@ class UseKeeper extends PolymerElement {
 								loading="{{specLoading}}"
 								name="specView">
 						</usekeeper-spec-list>
-						<usage-list
+						<usekeeper-usage-list
 								id="usageList"
 								loading="{{usageLoading}}"
 								name="usageView">
-						</usage-list>
+						</usekeeper-usage-list>
 						<usekeeper-user-list
 								id="userList"
 								loading="{{userLoading}}"
@@ -148,6 +148,7 @@ class UseKeeper extends PolymerElement {
 			<usekeeper-help id="getHelp" active="[[overFlowActive]]"></usekeeper-help>
 			<usekeeper-user-add id="userAdd" active="[[overFlowActive]]"></usekeeper-user-add>
 			<usekeeper-spec-add id="specAdd" active="[[overFlowActive]]"></usekeeper-spec-add>
+			<usekeeper-spec-update id="updateSpec" specification="[[activeItem]]"></usekeeper-spec-update>
 		`;
 	}
 
@@ -257,10 +258,11 @@ class UseKeeper extends PolymerElement {
 		// statement, so break it up.
 		switch (page) {
 			case 'usageView':
-				// import('./usage-list.js');
+				// import('./usekeeper-usage-list.js');
 				break;
 			case 'specView':
 				import('./usekeeper-spec-list.js');
+				import('./usekeeper-spec-update.js');
 				import('./usekeeper-spec-add.js');
 				break;
 			case 'userView':
