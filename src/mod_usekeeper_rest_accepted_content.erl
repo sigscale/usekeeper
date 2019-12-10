@@ -48,6 +48,7 @@
 % % @doc Erlang web server API callback function.
 do(#mod{method = Method, parsed_header = Headers, request_uri = Uri,
 		data = Data} = _ModData) ->
+receive after 4000 -> ok end,
 	case proplists:get_value(status, Data) of
 		{_StatusCode, _PhraseArgs, _Reason} ->
 			{proceed, Data};

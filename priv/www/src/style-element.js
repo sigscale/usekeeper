@@ -48,6 +48,7 @@ styleElement.innerHTML = `<template>
 			paper-progress {
 				display: block;
 				width: 100%;
+				margin: 0px;
 				--paper-progress-active-color: var(--paper-lime-a700);
 				--paper-progress-container-color: transparent;
 			}
@@ -84,21 +85,21 @@ styleElement.innerHTML = `<template>
             background-color: var(--paper-lime-a700);
             color: black;
          }
-			#restError {
-				--paper-toast-background-color: var(--paper-red-a400);
-			}
          .dialog {
             overflow: auto;
          }
-         .dialogOne {
+         .help {
             position: fixed;
             min-width: 20em;
             right: -36px;
             top: 41px;
             overflow: auto;
-            padding: 0px;
             display: inline-grid;
          }
+			paper-dialog app-toolbar {
+				color: white;
+				background-color: #bc5100;
+			}
          paper-dialog > *:first-child {
             margin-top: 0px;
          }
@@ -114,15 +115,11 @@ styleElement.innerHTML = `<template>
             display: none;
          }
          paper-dialog iron-collapse > div {
-            padding-top: 25px
+            padding-top: 25px;
          }
          paper-dialog iron-collapse > div:first-child {
-            padding-top: 0px
+            padding-top: 0px;
          }
-			paper-toolbar {
-				color: white;
-				background-color: #bc5100;
-			}
 			iron-icon {
 				padding-right: 10px;
 			}
