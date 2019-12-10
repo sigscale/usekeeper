@@ -7,7 +7,7 @@ modhtml = usekeeper_app.html \
 			usekeeper_sup.html \
 			usekeeper_server.html \
 			mod_usekeeper_rest_accepted_content.html \
-			mod_usekeeper_rest_post.html
+			mod_usekeeper_rest_post.html \
 			mod_usekeeper_rest_get.html \
 			mod_usekeeper_rest_delete.html \
 			mod_usekeeper_rest_patch.html \
