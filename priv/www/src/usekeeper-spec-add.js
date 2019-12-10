@@ -10,65 +10,49 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
-import '@polymer/paper-fab/paper-fab.js';
-import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-toolbar/paper-toolbar.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
-import '@polymer/paper-listbox/paper-listbox.js';
-import '@polymer/paper-item/paper-item.js'
-import '@polymer/iron-collapse/iron-collapse.js';
 import './style-element.js';
 
-class specAdd extends PolymerElement {
+class specificationAdd extends PolymerElement {
 	static get template() {
 		return html`
 			<style include="style-element">
 			</style>
-		<paper-dialog class="dialog" id="addSpecModal" modal>
+		<paper-dialog class="dialog" id="specificationAddModal" modal>
 			<paper-toolbar>
 				<div slot="top"><h2>Add Specification</h2></div>
 			</paper-toolbar>
 				<paper-input
-					id="name"
 					label="Name"
-					value="{{spec.name}}">
+					value="{{specificationName}}">
 				</paper-input>
 				<paper-input
-					id="desc"
 					label="Description"
-					value="{{spec.description}}">
+					value="{{specificationDescription}}">
 				</paper-input>
 				<div class="buttons">
 					<paper-button
-						raised
-						class="submit-button"
-						on-tap="_addSpec">
-							Add
+							raised
+							class="submit-button"
+							on-tap="_add">
+						Add
 					</paper-button>
 					<paper-button
-						class="cancel-button"
-						dialog-dismiss
-						on-tap="cancelSpec">
-							Cancel
-					</paper-button>
-					<paper-button
-						toggles
-						raised
-						class="delete-button"
-						on-tap="_deleteSpec">
-							Delete
+							class="cancel-button"
+							on-tap="_cancel">
+						Cancel
 					</paper-button>
 				</div>
 		</paper-dialog>
 		<iron-ajax
-			id="specAddAjax"
-			content-type="application/json"
-			on-loading-changed="_onLoadingChanged"
-			on-response="_specAddResponse"
-			on-error="_specAddError">
+				id="specificationAddAjax"
+				content-type="application/json"
+				on-loading-changed="_onLoadingChanged"
+				on-response="_response"
+				on-error="_error">
 		</iron-ajax>
 		`;
 	}
@@ -104,8 +88,8 @@ class specAdd extends PolymerElement {
 		super.ready()
 	}
 
-	_addSpec() {
-		var ajax = this.$.specAddAjax;
+	_add() {
+		var ajax = this.$.specificationAddAjax;
 		ajax.method = "POST";
 		ajax.url = "/usageManagement/v4/usageSpecification";
 		var spec = new Object();
@@ -116,20 +100,24 @@ class specAdd extends PolymerElement {
 		ajax.generateRequest();
 	}
 
-	cancelSpec() {
-		this.$.name.value = null;
-		this.$.desc.value = null;
-	}
-
-	_specAddResponse() {
-		this.$.addSpecModal.close();
+	_cancel() {
+		this.$.specificationAddModal.close();
 		this.specificationName = null;
 		this.specificationDescription = null;
 		this.specificationType = null;
 		this.specificationStatus = null;
-		this.specificationchars = [];
+		this.specificationChars = [];
+	}
+
+	_response() {
+		this.$.specificationAddModal.close();
+		this.specificationName = null;
+		this.specificationDescription = null;
+		this.specificationType = null;
+		this.specificationStatus = null;
+		this.specificationChars = [];
 		document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('specificationList').shadowRoot.getElementById('specificationGrid').clearCache();
 	}
 }
 
-window.customElements.define('usekeeper-spec-add', specAdd);
+window.customElements.define('usekeeper-spec-add', specificationAdd);

@@ -70,8 +70,8 @@ class specificationList extends PolymerElement {
 			</vaadin-grid>
 			<div class="add-button">
 				<paper-fab
-					icon="my-icons:add"
-					on-tap = "showAddSpecModal">
+						icon="my-icons:add"
+						on-tap="_specificationAddOpenModal">
 				</paper-fab>
 			</div>
 			<iron-ajax
@@ -116,14 +116,14 @@ class specificationList extends PolymerElement {
 
 	_getSpec(params, callback) {
 		var grid = this;
-		var specList = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-list');
-		var ajax = specList.shadowRoot.getElementById('getSpecAjax');
+		var specs = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-list');
+		var ajax = specs.shadowRoot.getElementById('getSpecAjax');
 		if(ajax.etag && params.page > 0) {
 			headers['If-Range'] = ajax.etag;
 		}
 		var handleAjaxResponse = function(request) {
 			if(request) {
-				specList.etag = request.xhr.getResponseHeader('ETag');
+				specs.etag = request.xhr.getResponseHeader('ETag');
 				var range = request.xhr.getResponseHeader('Content-Range');
 				var range1 = range.split("/");
 				var range2 = range1[0].split("-");
@@ -174,7 +174,7 @@ class specificationList extends PolymerElement {
 			}
 		};
 		var handleAjaxError = function(error) {
-			specList.etag = null;
+			specs.etag = null;
 			var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
 			toast.text = error;
 			toast.open();
@@ -187,8 +187,8 @@ class specificationList extends PolymerElement {
 			ajax.lastRequest.completes.then(function(request) {
 				var startRange = params.page * params.pageSize + 1;
 				ajax.headers['Range'] = "items=" + startRange + "-" + endRange;
-				if (specList.etag && params.page > 0) {
-					ajax.headers['If-Range'] = specList.etag;
+				if (specs.etag && params.page > 0) {
+					ajax.headers['If-Range'] = specs.etag;
 				} else {
 					delete ajax.headers['If-Range'];
 				}
@@ -198,16 +198,17 @@ class specificationList extends PolymerElement {
 			var startRange = params.page * params.pageSize + 1;
 			var endRange = startRange + params.pageSize - 1;
 			ajax.headers['Range'] = "items=" + startRange + "-" + endRange;
-			if (specList.etag && params.page > 0) {
-				ajax.headers['If-Range'] = specList.etag;
+			if (specs.etag && params.page > 0) {
+				ajax.headers['If-Range'] = specs.etag;
 			} else {
 				delete ajax.headers['If-Range'];
 			}
 			ajax.generateRequest().completes.then(handleAjaxResponse, handleAjaxError);
 		}
 	}
-	showAddSpecModal(event) {
-		 document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-add').shadowRoot.getElementById('addSpecModal').open();
+
+	_specificationAddOpenModal(event) {
+		 document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-add').shadowRoot.getElementById('specificationAddModal').open();
 	}
 }
 

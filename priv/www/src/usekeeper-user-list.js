@@ -45,7 +45,7 @@ class userList extends PolymerElement {
 			<div class="add-button">
 				<paper-fab
 					icon="my-icons:add"
-					on-tap = "showAddUserModal">
+					on-tap = "_userAddOpenModal">
 				</paper-fab>
 			</div>
 			<iron-ajax
@@ -170,8 +170,9 @@ class userList extends PolymerElement {
 			ajax.generateRequest().completes.then(handleAjaxResponse, handleAjaxError);
 		}
 	}
-	showAddUserModal(event) {
-		document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-user-add').shadowRoot.getElementById('addUserModal').open();
+
+	_userAddOpenModal() {
+		document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-user-add').shadowRoot.getElementById('userAddModal').open();
 	}
 }
 

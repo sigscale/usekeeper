@@ -10,83 +10,74 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
-import '@polymer/paper-fab/paper-fab.js';
-import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-toolbar/paper-toolbar.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
-import '@polymer/paper-listbox/paper-listbox.js';
-import '@polymer/paper-item/paper-item.js'
-import '@polymer/iron-collapse/iron-collapse.js';
 import './style-element.js';
 
 class userAdd extends PolymerElement {
 	static get template() {
 		return html`
-			<style include="style-element">
-			</style>
-		<paper-dialog class="dialog" id="addUserModal" modal>
+		<style include="style-element"></style>
+		<paper-dialog class="dialog" id="userAddModal" modal>
 			<paper-toolbar>
 				<div slot="top"><h2>Add User</h2></div>
 			</paper-toolbar>
 				<paper-input
-					id="username"
 					label="Username"
-					value="{{user.username}}">
+					value="{{userUsername}}">
 				</paper-input>
 				<paper-input
-					id="password"
 					label="Password"
-					value="{{user.password}}">
+					value="{{userPassword}}">
 				</paper-input>
 				<paper-input
-					id="firstname"
 					label="First Name"
-					value="{{user.firstname}}">
+					value="{{userFirstName}}">
 				</paper-input>
 				<paper-input
-					id="lastname"
 					label="Last Name"
-					value="{{user.lastname}}">
+					value="{{userLastName}}">
 				</paper-input>
 				<div class="buttons">
 					<paper-button
-						raised
-						class="submit-button"
-						on-tap="_addUser">
-							Add
+							raised
+							class="submit-button"
+							on-tap="_add">
+						Add
 					</paper-button>
 					<paper-button
-						class="cancel-button"
-						dialog-dismiss
-						on-tap="cancelSpec">
-							Cancel
+							class="cancel-button"
+							on-tap="_cancel">
+						Cancel
 					</paper-button>
 				</div>
 		</paper-dialog>
 		<iron-ajax
-			id="userAddAjax"
-			content-type="application/json"
-			on-loading-changed="_onLoadingChanged"
-			on-response="_userAddResponse"
-			on-error="_userAddError">
+				id="userAddAjax"
+				content-type="application/json"
+				on-loading-changed="_onLoadingChanged"
+				on-response="_response"
+				on-error="_error">
 		</iron-ajax>
 		`;
 	}
 
 	static get properties() {
 		return {
-			user: {
-				type: Object,
+			userUsername: {
+				type: String
 			},
-			charArray: {
-				type: Array,
-				value: function() {
-					return [];
-				}
+			userPassword: {
+				type: String
 			},
+			userFirsName: {
+				type: String
+			},
+			userLastName: {
+				type: String
+			}
 		}
 	}
 
@@ -94,52 +85,61 @@ class userAdd extends PolymerElement {
 		super.ready()
 	}
 
-	_addUser() {
+	_cancel() {
+		this.userUsername = null;
+		this.userPassword = null;
+		this.userFirstName = null;
+		this.userLastName = null;
+	}
+
+	_add() {
 		var ajax = this.$.userAddAjax;
 		ajax.method = "POST";
 		ajax.url = "party/v4/individual";
-		var use = new Object();
-		if(this.$.username.value) {
-			use.id = this.$.username.value;
+		var user = new Object();
+		user.characteristic = [];
+		if(this.userUsername) {
+			user.id = this.userUsername;
+			var char1 = new Object();
+			char1.name = "username";
+			char1.value = this.userUsername;
+			user.characteristic.push(char1);
 		}
-		if(this.$.username.value) {
-			var charObj = new Object();
-			charObj.name = "username";
-			charObj.value = this.$.username.value;
+		if(this.userPassword) {
+			var char2 = new Object();
+			char2.name = "password";
+			char2.value = this.userPassword;
+			user.characteristic.push(char2);
 		}
-		if(this.$.password.value) {
-			var charObj1 = new Object();
-			charObj1.name = "password";
-			charObj1.value = this.$.password.value;
+		if(this.userFirstName) {
+			var char3 = new Object();
+			char3.name = "givenName";
+			char3.value = this.userFirstName;
+			user.characteristic.push(char3);
 		}
-		if(this.$.firstname.value) {
-			var charObj2 = new Object();
-			charObj2.name = "givenName";
-			charObj2.value = this.$.firstname.value;
+		if(this.userLastName) {
+			var char4 = new Object();
+			char4.name = "lastName";
+			char4.value = this.userLastName;
+			user.characteristic.push(char4);
 		}
-		if(this.$.lastname.value) {
-			var charObj3 = new Object();
-			charObj3.name = "lastName";
-			charObj3.value = this.$.lastname.value;
-		}
-		use.characteristic = [charObj, charObj1, charObj2, charObj3];
-		ajax.body = JSON.stringify(use);
+		ajax.body = JSON.stringify(user);
 		ajax.generateRequest();
-		this.$.username.value = null;
-		this.$.password.value = null;
-		this.$.firstname.value = null;
-		this.$.lastname.value = null;
 	}
 
-	cancelSpec() {
-		this.$.username.value = null;
-		this.$.password.value = null;
-		this.$.firstname.value = null;
-		this.$.lastname.value = null;
+	_response() {
+		this.$.userAddModal.close();
+		this.userUsername = null;
+		this.userPassword = null;
+		this.userFirstName = null;
+		this.userLastName = null;
+		document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('userList').shadowRoot.getElementById('userGrid').clearCache();
 	}
 
-	_userAddResponse() {
-		document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-user-add').shadowRoot.getElementById('addUserModal').close();
+	_error(event) {
+		var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
+		toast.text = event.detail.request.xhr.statusText;
+		toast.open();
 	}
 }
 

@@ -94,7 +94,7 @@ class UseKeeper extends PolymerElement {
 							attr-for-selected="name"
 							role="main">
 						<usekeeper-spec-list
-								id="specList"
+								id="specificationList"
 								name="specView"
 								active-item="{{activeSpecificationItem}}"
 								loading="{{specificationLoading}}">
@@ -169,7 +169,7 @@ class UseKeeper extends PolymerElement {
 		var grid;
 		switch(this.$.load.selected) {
 			case "specView":
-				var spec = this.shadowRoot.getElementById('specList');
+				var spec = this.shadowRoot.getElementById('specificationList');
 				if (!spec.loading) {
 					grid = spec.shadowRoot.getElementById('specificationGrid');
 					grid.size = undefined;
