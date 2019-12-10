@@ -67,13 +67,6 @@ class specUpdateList extends PolymerElement {
 						on-tap="cancelSpec">
 							Cancel
 					</paper-button>
-					<paper-button
-						toggles
-						raised
-						class="delete-button"
-						on-tap="_deleteSpec">
-							Delete
-					</paper-button>
 				</div>
 			</paper-dialog>
 			<iron-ajax

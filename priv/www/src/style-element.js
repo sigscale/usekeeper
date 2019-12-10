@@ -80,6 +80,10 @@ styleElement.innerHTML = `<template>
 			.cancel-button {
 				color: black;
 			}
+         .update-button {
+            background-color: var(--paper-lime-a700);
+            color: black;
+         }
 			#restError {
 				--paper-toast-background-color: var(--paper-red-a400);
 			}
