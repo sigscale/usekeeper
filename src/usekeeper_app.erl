@@ -222,7 +222,13 @@ install3(Nodes, Acc) ->
 			{attributes, record_info(fields, use_spec)}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new usage specification table.~n"),
-			install4(Nodes, [use_spec | Acc]);
+			case add_example_usage_specs() of
+				ok ->
+					error_logger:info_msg("Added example usage specifications.~n"),
+					install4(Nodes, [use_spec | Acc]);
+				{error, Reason} ->
+					{error, Reason}
+			end;
 		{aborted, {not_active, _, Node} = Reason} ->
 			error_logger:error_report(["Mnesia not started on node",
 					{node, Node}]),
@@ -280,7 +286,7 @@ install7(Nodes, Acc, false) ->
 	install10(Nodes, Acc).
 %% @hidden
 install8(Nodes, Acc) ->
-	case mnesia:create_table(httpd_user, [{type, bag},{disc_copies, Nodes},
+	case mnesia:create_table(httpd_user, [{type, bag}, {disc_copies, Nodes},
 			{attributes, record_info(fields, httpd_user)}]) of
 		{atomic, ok} ->
 			error_logger:info_msg("Created new httpd_user table.~n"),
@@ -294,7 +300,7 @@ install8(Nodes, Acc) ->
 			install9(Nodes, [httpd_user | Acc]);
 		{aborted, Reason} ->
 			error_logger:error_report([mnesia:error_description(Reason),
-				{error, Reason}]),
+					{error, Reason}]),
 			{error, Reason}
 	end.
 %% @hidden
@@ -451,4 +457,158 @@ create_dir(ExportDir) ->
 		{error, Reason} ->
 			{error, Reason}
 	end.
+
+-spec add_example_usage_specs() -> Result
+	when
+		Result :: ok | {error, Reason},
+		Reason :: term().
+%% @doc Seed `use_spec' table with example usage specifications.
+%% @private
+add_example_usage_specs() ->
+	Specification = #use_spec{name = "WLAN",
+			description = "IPDR Public WLAN Access - WISP Use Case",
+			start_date = 1575158400000, end_date = 1609459199000,
+			characteristic = ipdr_wlan()},
+	case usekeeper:add_usage_spec(Specification) of
+		{ok, #use_spec{}} ->
+			ok;
+		{error, Reason} ->
+			{error, Reason}
+	end.
+
+-spec ipdr_wlan() -> map().
+%% @doc Usage specification characteristics for IPDR
+%% 	Public WLAN Access - WISP Use Case.
+ipdr_wlan() ->
+	#{"ipdrCreationTime" => #{"name" => "ipdrCreationTime",
+				"description" => "", "valueType" => "string"},
+		"seqNum" => #{"name" => "seqNum",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0}},
+		"username" => #{"name" => "username",
+				"description" => "The end user ID and their domain name (NAI).",
+				"valueType" => "string"},
+		"scIdType" => #{"name" => "scIdType",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 3}},
+		"scId" => #{"name" => "scId",
+				"description" => "", "valueType" => "string"},
+		"homeServiceProviderType" => #{"name" => "homeServiceProviderType",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 4}},
+		"homeServiceProvider" => #{"name" => "homeServiceProvider",
+				"description" => "", "valueType" => "string"},
+		"acctSessionId" => #{"name" => "acctSessionId",
+				"description" => "", "valueType" => "string"},
+		"userIpAddress" => #{"name" => "userIpAddress",
+				"description" => "", "valueType" => "string"},
+		"callingStationId" => #{"name" => "callingStationId",
+				"description" => "", "valueType" => "string"},
+		"calledStationId" => #{"name" => "calledStationId",
+				"description" => "", "valueType" => "string"},
+		"nasIpAddress" => #{"name" => "nasIpAddress",
+				"description" => "", "valueType" => "string"},
+		"nasId" => #{"name" => "nasId",
+				"description" => "", "valueType" => "string"},
+		"accessProviderType" => #{"name" => "accessProviderType",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 4}},
+		"accessServiceProvider" => #{"name" => "accessServiceProvider",
+				"description" => "", "valueType" => "string"},
+		"locationName" => #{"name" => "locationName",
+				"description" => "", "valueType" => "string"},
+		"locationId" => #{"name" => "locationId",
+				"description" => "", "valueType" => "string"},
+		"locationType" => #{"name" => "locationType",
+				"description" => "", "valueType" => "string"},
+		"locationCountryCode" => #{"name" => "locationCountryCode",
+				"description" => "", "valueType" => "string"},
+		"locationStateProvince" => #{"name" => "locationStateProvince",
+				"description" => "", "valueType" => "string"},
+		"locationCity" => #{"name" => "locationCity",
+				"description" => "", "valueType" => "string"},
+		"locationGeocode" => #{"name" => "locationGeocode",
+				"description" => "", "valueType" => "string"},
+		"locationGeocodeType" => #{"name" => "locationGeocodeType",
+				"description" => "", "valueType" => "string"},
+		"nasPortType" => #{"name" => "nasPortType",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0, "valueTo" => 19}},
+		"paymentType" => #{"name" => "paymentType",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 3}},
+		"networkConnectionType" => #{"name" => "networkConnectionType",
+				"description" => "", "valueType" => "string"},
+		"sessionDuration" => #{"name" => "sessionDuration",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0}},
+		"inputOctets" => #{"name" => "inputOctets",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0}},
+		"outputOctets" => #{"name" => "outputOctets",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1}},
+		"class" => #{"name" => "class",
+				"description" => "", "valueType" => "string"},
+		"gmtSessionStartDateTime" => #{"name" => "gmtSessionStartDateTime",
+				"description" => "", "valueType" => "string"},
+		"gmtSessionEndDateTime" => #{"name" => "gmtSessionStartDateTime",
+				"description" => "", "valueType" => "string"},
+		"sessionTerminateCause" => #{"name" => "sessionTerminateCause",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 7}},
+		"billingClassOfService" => #{"name" => "billingClassOfService",
+				"description" => "", "valueType" => "string"},
+		"unitOfMeasure" => #{"name" => "unitOfMeasure",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 7}},
+		"chargeableUnit" => #{"name" => "chargeableUnit",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 7}},
+		"chargeableQuantity" => #{"name" => "chargeableQuantity",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0}},
+		"chargeAmount" => #{"name" => "chargeAmount",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0}},
+		"chargeCurrencyType" => #{"name" => "chargeCurrencyType",
+				"description" => "", "valueType" => "string"},
+		"otherParty" => #{"name" => "otherParty",
+				"description" => "", "valueType" => "string"},
+		"taxPercentage" => #{"name" => "taxPercentage",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0, "valueTo" => 100}},
+		"taxAmount" => #{"name" => "taxAmount",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 0}},
+		"taxType" => #{"name" => "taxType",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 14}},
+		"intermediaryName" => #{"name" => "intermediaryName",
+				"description" => "", "valueType" => "string"},
+		"serviceName" => #{"name" => "serviceName",
+				"description" => "",  "valueType" => "integer",
+				"specCharacteristicValue" => #{"valueType" => "integer",
+						"valueFrom" => 1, "valueTo" => 6}},
+		"relatedIpdrIdList" => #{"name" => "relatedIpdrIdList",
+				"description" => "", "valueType" => "string"},
+		"tempUserId" => #{"name" => "tempUserId",
+				"description" => "", "valueType" => "string"}}.
 
