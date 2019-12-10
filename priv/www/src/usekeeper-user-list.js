@@ -62,8 +62,13 @@ class userList extends PolymerElement {
 				type: Boolean,
 				notify: true
 			},
+			activeItem: {
+				type: Object,
+				notify: true,
+				observer: '_activeItemChanged'
+			},
 			etag: {
-			type: String,
+				type: String,
 				value: null
 			}
 		}
@@ -73,6 +78,14 @@ class userList extends PolymerElement {
 		super.ready();
 		var grid = this.shadowRoot.getElementById('userGrid');
 		grid.dataProvider = this._getLog;
+	}
+
+	_activeItemChanged(item) {
+		if(item) {
+			this.$.userGrid.selectedItems = item ? [item] : [];
+      } else {
+			this.$.userGrid.selectedItems = [];
+		}
 	}
 
 	_getLog(params, callback) {

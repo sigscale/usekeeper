@@ -31,28 +31,28 @@ class specUpdateList extends PolymerElement {
 				<paper-input
 					id="updateSpecId"
 					label="Name"
-					value="{{spec.specId}}"
+					value="{{specificationId}}"
 					disabled>
 				</paper-input>
 				<paper-input
 					id="updateSpecName"
 					label="Name"
-					value="{{spec.specName}}">
+					value="{{specificationName}}">
 				</paper-input>
 				<paper-input
 					id="updateSpecDesc"
 					label="Description"
-					value="{{spec.specDesc}}">
+					value="{{specificationDescription}}">
 				</paper-input>
 				<paper-input
 					id="updateSpecType"
 					label="Class"
-					value="{{spec.specClass}}">
+					value="{{specificationType}}">
 				</paper-input>
 				<paper-input
 					id="updateSpecBase"
 					label="Base"
-					value="{{spec.specBase}}">
+					value="{{specificationBase}}">
 				</paper-input>
 				<div class="buttons">
 					<paper-button
@@ -81,8 +81,27 @@ class specUpdateList extends PolymerElement {
 
 	static get properties() {
 		return {
-			spec: {
+			activeItem: {
 				type: Object,
+				observer: '_activeItemChanged'
+			},
+			specificationId: {
+				type: String
+			},
+			specificationName: {
+				type: String
+			},
+			specificationDescription: {
+				type: String
+			},
+			specificationType: {
+				type: String
+			},
+			specificationBase: {
+				type: String
+			},
+			specificationChars: {
+				type: String
 			}
 		}
 	}
@@ -91,23 +110,49 @@ class specUpdateList extends PolymerElement {
 		super.ready()
 	}
 
+	_activeItemChanged(item) {
+		if(item) {
+			this.specificationId = item.id;
+			this.specificationName = item.name;
+			this.specificationDescription = item.description;
+			this.specificationType = item.type;
+			this.specificationChars = item.chars;
+			this.$.updateSpecModal.open();
+		} else {
+			this.specificationId = null;
+			this.specificationName = null;
+			this.specificationDescription = null;
+			this.specificationType = null;
+			this.specificationChars = [];
+		}
+	}
+
+	_cancel() {
+		this.$.updateSpecModal.close();
+		this.specificationId = null;
+		this.specificationName = null;
+		this.specificationDescription = null;
+		this.specificationType = null;
+		this.specificationChars = [];
+	}
+
 	_updateSpec() {
 		var ajax = this.$.specUpdateAjax;
 		ajax.method = "PATCH";
-		ajax.url = "/usageManagement/v4/usageSpecification/" + this.$.updateSpecId.value;
+		ajax.url = "/usageManagement/v4/usageSpecification/" + this.specificationId;
 		var spec = new Array();
-		if(this.$.updateSpecName.value) {
+		if(this.specificationName) {
 			var specName = new Object();
 			specName.op = "add";
 			specName.path = "/name";
-			specName.value = this.$.updateSpecName.value;
+			specName.value = this.specificationName;
 			spec.push(specName);
 		}
-		if(this.$.updateSpecDesc.value) {
+		if(this.specificationDescription) {
 			var specDescription = new Object();
 			specDescription.op = "replace";
 			specDescription.path = "/description";
-			specDescription.value = this.$.updateSpecDesc.value;
+			specDescription.value = this.specificationDescription;
 			spec.push(specDescription);
 		}
 		ajax.body = JSON.stringify(spec);

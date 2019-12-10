@@ -75,15 +75,28 @@ class specAdd extends PolymerElement {
 
 	static get properties() {
 		return {
-			spec: {
-				type: Object,
+			loading: {
+				type: Boolean,
+				value: false
 			},
-			charArray: {
-				type: Array,
-				value: function() {
-					return [];
-				}
+			specificationName: {
+				type: String
 			},
+			specificationDescription: {
+				type: String
+			},
+			specificationType: {
+				type: String
+			},
+			specificationStatus: {
+				type: String
+			},
+			specificationType: {
+				type: String
+			},
+			specificationChars: {
+				type: Array
+			}
 		}
 	}
 
@@ -95,10 +108,11 @@ class specAdd extends PolymerElement {
 		var ajax = this.$.specAddAjax;
 		ajax.method = "POST";
 		ajax.url = "/usageManagement/v4/usageSpecification";
-		var spe = new Object();
-		spe.name = this.$.name.value;
-		spe.description = this.$.desc.value;
-		ajax.body = spe;
+		var spec = new Object();
+		spec.name = this.specificationName;
+		spec.description = this.specificationDescription;
+		spec['@type'] = this.specificationType;
+		ajax.body = spec;
 		ajax.generateRequest();
 	}
 
@@ -108,7 +122,13 @@ class specAdd extends PolymerElement {
 	}
 
 	_specAddResponse() {
-		document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-add').shadowRoot.getElementById('addSpecModal').close();
+		this.$.addSpecModal.close();
+		this.specificationName = null;
+		this.specificationDescription = null;
+		this.specificationType = null;
+		this.specificationStatus = null;
+		this.specificationchars = [];
+		document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('specificationList').shadowRoot.getElementById('specificationGrid').clearCache();
 	}
 }
 

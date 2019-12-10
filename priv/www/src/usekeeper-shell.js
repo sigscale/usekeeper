@@ -95,18 +95,21 @@ class UseKeeper extends PolymerElement {
 							role="main">
 						<usekeeper-spec-list
 								id="specList"
-								loading="{{specLoading}}"
-								name="specView">
+								name="specView"
+								active-item="{{activeSpecificationItem}}"
+								loading="{{specificationLoading}}">
 						</usekeeper-spec-list>
 						<usekeeper-usage-list
 								id="usageList"
-								loading="{{usageLoading}}"
-								name="usageView">
+								name="usageView"
+								active-item="{{activeUsageItem}}"
+								loading="{{usageLoading}}">
 						</usekeeper-usage-list>
 						<usekeeper-user-list
 								id="userList"
-								loading="{{userLoading}}"
-								name="userView">
+								name="userView"
+								active-item="{{activeUserItem}}"
+								loading="{{userLoading}}">
 						</usekeeper-user-list>
 					</iron-pages>
 					<paper-toast
@@ -144,11 +147,21 @@ class UseKeeper extends PolymerElement {
 					</iron-selector>
 				</app-drawer>
 			</app-drawer-layout>
-			<!-- Model Definitions -->
-			<usekeeper-help id="getHelp" active="[[overFlowActive]]"></usekeeper-help>
-			<usekeeper-user-add id="userAdd" active="[[overFlowActive]]"></usekeeper-user-add>
-			<usekeeper-spec-add id="specAdd" active="[[overFlowActive]]"></usekeeper-spec-add>
-			<usekeeper-spec-update id="updateSpec" specification="[[activeItem]]"></usekeeper-spec-update>
+			<!-- Modal Definitions -->
+			<usekeeper-help
+					id="getHelp"
+					active="[[overFlowActive]]">
+			</usekeeper-help>
+			<usekeeper-user-add
+					id="userAdd"
+			</usekeeper-user-add>
+			<usekeeper-spec-add
+					id="specAdd">
+			</usekeeper-spec-add>
+			<usekeeper-spec-update
+					id="updateSpec"
+					active-item="[[activeSpecificationItem]]">
+			</usekeeper-spec-update>
 		`;
 	}
 
@@ -158,7 +171,7 @@ class UseKeeper extends PolymerElement {
 			case "specView":
 				var spec = this.shadowRoot.getElementById('specList');
 				if (!spec.loading) {
-					grid = spec.shadowRoot.getElementById('specGrid');
+					grid = spec.shadowRoot.getElementById('specificationGrid');
 					grid.size = undefined;
 					grid.clearCache();
 				} else {
@@ -204,14 +217,26 @@ class UseKeeper extends PolymerElement {
 				type: String,
 				value: false
 			},
-			userLoading: {
-				type: String,
-			},
-			specLoading: {
-				type: String,
+			specificationLoading: {
+				type: Boolean,
+				value: false
 			},
 			usageLoading: {
-				type: String,
+				type: Boolean,
+				value: false
+			},
+			userLoading: {
+				type: Boolean,
+				value: false
+			},
+			activeSpecificationItem: {
+				type: Object
+			},
+			activeUsageItem: {
+				type: Object
+			},
+			activeUserItem: {
+				type: Object
 			}
 		};
 	}
@@ -219,7 +244,7 @@ class UseKeeper extends PolymerElement {
 	static get observers() {
 		return [
 			'_routePageChanged(routeData.page)',
-			'_loadingChanged()'
+			'_loadingChanged(specificationLoading, usageLoading, userLoading)'
 		];
 	}
 
@@ -261,19 +286,19 @@ class UseKeeper extends PolymerElement {
 				// import('./usekeeper-usage-list.js');
 				break;
 			case 'specView':
-				import('./usekeeper-spec-list.js');
 				import('./usekeeper-spec-update.js');
 				import('./usekeeper-spec-add.js');
+				import('./usekeeper-spec-list.js');
 				break;
 			case 'userView':
-				import('./usekeeper-user-list.js');
 				import('./usekeeper-user-add.js');
+				import('./usekeeper-user-list.js');
 				break;
 		}
 	}
 
 	_loadingChanged() {
-		if (this.usageLoading || this.userLoading || this.specLoading) {
+		if (this.specificationLoading || this.usageLoading || this.userLoading) {
 			this.loading = true;
 		} else {
 			this.loading = false;

@@ -18,12 +18,12 @@ import '@polymer/paper-fab/paper-fab.js';
 import './usekeeper-icons.js';
 import './style-element.js';
 
-class specList extends PolymerElement {
+class specificationList extends PolymerElement {
 	static get template() {
 		return html`
 			<style include="style-element">
 			</style>
-			<vaadin-grid id="specGrid"
+			<vaadin-grid id="specificationGrid"
 					loading="{{loading}}"
 					active-item="{{activeItem}}">
 				<vaadin-grid-column width="6ex" flex-grow="10">
@@ -100,24 +100,18 @@ class specList extends PolymerElement {
 		}
 	}
 
-	_activeItemChanged(item, last) {
-		if(item) {
-			var grid = this.$.specGrid;
-			grid.selectedItems = item ? [item] : [];
-			var updateSpec = document.querySelector('usekeeper-shell').shadowRoot.getElementById('updateSpec');
-			updateSpec.shadowRoot.getElementById('updateSpecModal').open();
-			updateSpec.shadowRoot.getElementById('updateSpecId').value = item.id;
-			updateSpec.shadowRoot.getElementById('updateSpecName').value = item.name;
-			updateSpec.shadowRoot.getElementById('updateSpecDesc').value = item.description;
-			updateSpec.shadowRoot.getElementById('updateSpecType').value = item.class;
-			updateSpec.shadowRoot.getElementById('updateSpecBase').value = item.base;
-		}
-	}
-
 	ready() {
 		super.ready();
-		var grid = this.shadowRoot.getElementById('specGrid');
+		var grid = this.shadowRoot.getElementById('specificationGrid');
 		grid.dataProvider = this._getSpec;
+	}
+
+	_activeItemChanged(item) {
+		if(item) {
+			this.$.specificationGrid.selectedItems = item ? [item] : [];
+      } else {
+			this.$.specificationGrid.selectedItems = [];
+		}
 	}
 
 	_getSpec(params, callback) {
@@ -217,4 +211,4 @@ class specList extends PolymerElement {
 	}
 }
 
-window.customElements.define('usekeeper-spec-list', specList);
+window.customElements.define('usekeeper-spec-list', specificationList);
