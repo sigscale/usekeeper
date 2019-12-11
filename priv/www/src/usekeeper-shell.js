@@ -26,7 +26,6 @@ import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/paper-progress/paper-progress.js';
 import '@polymer/paper-toast/paper-toast.js';
-import '@polymer/iron-collapse/iron-collapse.js';
 import './usekeeper-icons.js';
 import './style-element.js';
 
