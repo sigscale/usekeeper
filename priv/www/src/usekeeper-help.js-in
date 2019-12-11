@@ -155,45 +155,27 @@ class ukHelp extends PolymerElement {
 	}
 
 	_about(event) {
-		var aboutUk = document.querySelector('usekeeper-shell').shadowRoot.getElementById('getHelp');
-		var aboutUk1 = aboutUk.shadowRoot.getElementById('overFlowMenu');
-		aboutUk1.close();
-		var aboutObj = aboutUk.shadowRoot.getElementById('aboutHelp');
-		aboutObj.open();
+		this.$.overFlowMenu.close();
+		this.$.aboutHelp.open();
 	}
 	helpId(event) {
-		var helpUk = document.querySelector('usekeeper-shell').shadowRoot.getElementById('getHelp');
-		var helpUk1 = helpUk.shadowRoot.getElementById('overFlowMenu');
-		helpUk1.close();
-		var helpObj = helpUk.shadowRoot.getElementById('helpMenu');
-		helpObj.open();
+		this.$.overFlowMenu.close();
+		this.$.helpMenu.open();
 	}
 	usage(event) {
-		var usageUk = document.querySelector('usekeeper-shell').shadowRoot.getElementById('getHelp');
-		var useObj = usageUk.shadowRoot.getElementById('helpMenu');
-		useObj.close();
-		var useObjDialog = usageUk.shadowRoot.getElementById('helpLogs');
-		useObjDialog.open();
+		this.$.helpMenu.close();
+		this.$.helpLogs.open();
 	}
 	helpBack(event) {
-		var helpBackUk = document.querySelector('usekeeper-shell').shadowRoot.getElementById('getHelp');
-		var helpUsageDialog = helpBackUk.shadowRoot.getElementById('helpUsage');
-		helpUsageDialog.close();
-		var helpLogDialog = helpBackUk.shadowRoot.getElementById('helpLogs');
-		helpLogDialog.close();
-		var helpDashDialog = helpBackUk.shadowRoot.getElementById('helpDash');
-		helpDashDialog.close();
-		var helpObjDialog = helpBackUk.shadowRoot.getElementById('helpUsers');
-		helpObjDialog.close();
-		var helpBackObj = helpBackUk.shadowRoot.getElementById('helpMenu');
-		helpBackObj.open();
+		this.$.helpUsage.close();
+		this.$.helpLogs.close();
+		this.$.helpUsers.close();
+		this.$.helpMenu.close();
 	}
 
 	_dialog(newValue) {
-		var uk = document.querySelector('usekeeper-shell');
-		var help = uk.shadowRoot.getElementById('getHelp');
-		var dialog = help.shadowRoot.getElementById('overFlowMenu');
-		var overFlow = uk.shadowRoot.getElementById('overFlowIcon');
+		var overFlow = document.querySelector('usekeeper-shell').shadowRoot.getElementById('getHelp');
+		var dialog = this.$.overFlowMenu;
 		if(newValue) {
 			dialog.positionTarget = overFlow;
 			dialog.open();
@@ -203,12 +185,11 @@ class ukHelp extends PolymerElement {
 	}
 
 	_collapseLogsContact(event) {
-		var uk = document.querySelector('usekeeper-shell').shadowRoot.getElementById('getHelp');
-		var ukContact = uk.shadowRoot.getElementById('contact');
-		if(ukContact.opened == false) {
-			ukContact.show();
+		var contact = this.$.contact;
+		if(contact.opened == false) {
+			contact.show();
 		} else {
-			ukContact.hide();
+			contact.hide();
 		}
 	}
 }
