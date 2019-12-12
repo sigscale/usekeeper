@@ -27,7 +27,7 @@ class specificationUpdate extends PolymerElement {
 			</style>
 			<paper-dialog class="dialog" id="specificationUpdateModal" modal>
 				<app-toolbar>
-					<div main-title>Updade Specification</div>
+					<div main-title>Update Specification</div>
 				</app-toolbar>
 				<paper-progress
 						indeterminate
