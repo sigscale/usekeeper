@@ -24,7 +24,7 @@
 %% export the usekeeper public API
 -export([add_user/2, add_user/4, list_users/0, get_user/1, delete_user/1,
 		add_usage_spec/1, delete_usage_spec/1, query/6,
-		add_usage/1]).
+		add_usage/1, query_usage/4]).
 
 %% export the usekeeper private API
 -export([]).
@@ -307,6 +307,55 @@ add_usage(Usage) ->
 		{error, Reason} ->
 			{error, Reason}
 	end.
+
+-spec query_usage(Cont, Size, Sort, MatchSpec) -> Result
+	when
+		Cont :: start | any(),
+		Size :: pos_integer() | undefined,
+		Sort :: [integer()],
+		MatchSpec :: ets:match_pattern() | '_',
+		Result :: {Cont1, [term()], Total} | {error, Reason},
+		Cont1 :: eof | any(),
+		Total :: non_neg_integer(),
+		Reason :: term().
+%% @doc Query the `usage' log.
+%%
+%%    The first time called `Cont' should have the value `start'.
+%%
+%% 	If `Size' is not `undefined' results will be paginated
+%% 	with at most `Size' items per page. The next page is returned
+%% 	by providing `Cont' as the value of `Cont1' from the result
+%% 	of the previous call.
+%%
+%%		The result list will be sorted by the keys of the usage map listed
+%% 	in `Sort', in order of appearance.
+%%
+%% 	Query selection is controlled by `MatchSpec'. See the
+%% 	{@link //erts. erts} User's Guide for definition of
+%% 	Match Specifications.
+%%
+query_usage(Cont, undefined, Sort, MatchSpec) when is_list(Sort) ->
+	{ok, Size} = application:get_env(usekeeper, rest_page_size),
+	query_usage1(disk_log:chunk(usage, Cont, Size), Sort, MatchSpec);
+query_usage(Cont, Size, Sort, MatchSpec)
+		when is_integer(Size), is_list(Sort) ->
+	query_usage1(disk_log:chunk(usage, Cont, Size), Sort, MatchSpec).
+%% @hidden
+query_usage1(eof, _Sort, _MatchSpec) ->
+	{eof, [], 0};
+query_usage1({error, Reason}, _Sort, _MatchSpec) ->
+	{error, Reason};
+query_usage1({Cont, Chunk, 0}, Sort, '_') when is_list(Chunk) ->
+	query_usage2(Cont, Chunk, length(Chunk), lists:reverse(Sort));
+query_usage1({Cont, Chunk}, Sort, '_') when is_list(Chunk) ->
+	query_usage2(Cont, Chunk, length(Chunk), lists:reverse(Sort)).
+%% @hidden
+query_usage2(Cont, Objects, Total, [H | T]) when H > 0 ->
+	query_usage2(Cont, lists:keysort(H, Objects), Total, T);
+query_usage2(Cont, Objects, Total, [H | T]) when H < 0 ->
+	query_usage2(Cont, lists:reverse(lists:keysort(-H, Objects)), Total, T);
+query_usage2(Cont, Objects, Total, []) ->
+	{Cont, Objects, Total}.
 
 %%----------------------------------------------------------------------
 %%  internal functions
