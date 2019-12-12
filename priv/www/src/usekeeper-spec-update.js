@@ -27,7 +27,7 @@ class specificationUpdate extends PolymerElement {
 			</style>
 			<paper-dialog class="dialog" id="specificationUpdateModal" modal>
 				<app-toolbar>
-					<div main-title>Updade Specification</div>
+					<div main-title>Update Specification</div>
 				</app-toolbar>
 				<paper-progress
 						indeterminate
@@ -67,8 +67,20 @@ class specificationUpdate extends PolymerElement {
 							on-tap="_cancel">
 						Cancel
 					</paper-button>
+					<paper-button
+							toggles
+							raised
+							class="delete-button"
+							on-tap="_deleteSpec">
+						Delete
+					</paper-button>
 				</div>
 			</paper-dialog>
+			<iron-ajax
+				id="deleteSpecAjax"
+				on_response="_deleteSpecResponse"
+				on-error="_deleteSpecError">
+			</iron-ajax>
 			<iron-ajax
 					id="specUpdateAjax"
 					content-type="application/merge-patch+json"
@@ -138,6 +150,15 @@ class specificationUpdate extends PolymerElement {
 		this.specificationDescription = null;
 		this.specificationType = null;
 		this.specificationChars = [];
+	}
+
+	_deleteSpec() {
+		var ajax1 = this.$.deleteSpecAjax;
+		ajax1.method = "DELETE";
+		ajax1.url = "/usageManagement/v4/usageSpecification/" + this.specificationId;
+		ajax1.generateRequest();
+		var deleteObj =  document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-update').shadowRoot.getElementById('specificationUpdateModal');
+		deleteObj.close();
 	}
 
 	_update() {
