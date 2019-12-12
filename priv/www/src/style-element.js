@@ -176,6 +176,10 @@ styleElement.innerHTML = `<template>
 				--paper-item-icon-width: 32px;
 				--paper-item-min-height: 1em;
 			}
+         .delete-button {
+            background: #EF5350;
+            color: black;
+         }
 		</style>
 	</template>`;
 
