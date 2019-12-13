@@ -12,6 +12,7 @@ MODULES = usekeeper-shell.js \
 		usekeeper-spec-list.js \
 		usekeeper-spec-add.js \
 		usekeeper-spec-update.js \
+		usekeeper-usage-list.js \
 		usekeeper-user-add.js \
 		usekeeper-user-list.js
 
