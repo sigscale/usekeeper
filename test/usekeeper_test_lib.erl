@@ -141,22 +141,20 @@ voice_spec() ->
 					"usageSpecChar8" => CharSpec8}}.
 
 voice_usage() ->
-	Name = "VoiceUsage",
 	Description = "Specification for voice call usage",
-	StartDate = 1366389743000,
-	EndDate = 4085510400000,
 	UsageChar1 = #{"name" => "poolNumber", "value" => 1},
 	UsageChar2 = #{"name" => "characteristicType", "value" => "Reserved"},
 	UsageChar3 = #{"name" => "value", "value" => 2},
 	UsageChar4 = #{"name" => "unit", "value" => "GHZ"},
 	RelatedParty = #{"id" => 1, "role" => "customer"},
-	Rated = #{"tag" => "Usage", "amount_type" => "Total",
-			"tax_included_amount" => 12, "tax_excluded_amount" => 10,
-			"tax_rate" => 10, "is_tax_exempt" => false, "currency" => "EUR"},
-	#{"name" => Name, "description" => Description,
-			"start_date" => StartDate, "end_date" => EndDate, "status" => received,
+	Rated = #{"usageRatingTag" => "Usage", "ratingAmountType" => "Total",
+			"taxIncludedRatingAmount" => 12, "taxExcludedRatingAmount" => 10,
+			"taxRate" => 10, "isTaxExempt" => false, "currencyCode" => "EUR"},
+	#{"description" => Description,
+			"date" => "2013-04-19T16:42:23", "status" => received,
 			"type" => "CloudCpuUsage",
-			"characteristic" => #{"usageChar1" => UsageChar1,
+			"usageCharacteristic" => #{"usageChar1" => UsageChar1,
 					"usageChar2" => UsageChar2, "usageChar3" => UsageChar3,
 					"usageChar4" => UsageChar4},
-			"related_party" => RelatedParty, "rated" => Rated}.
+			"relatedParty" => #{"party1" => RelatedParty},
+			"ratedProductUsage" => #{"rate1" => Rated}}.
