@@ -116,6 +116,9 @@ class specificationList extends PolymerElement {
 
 	_getSpec(params, callback) {
 		var grid = this;
+		if(!grid.size) {
+			grid.size = 0;
+		}
 		var specs = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-spec-list');
 		var ajax = specs.shadowRoot.getElementById('getSpecAjax');
 		if(ajax.etag && params.page > 0) {
@@ -178,9 +181,6 @@ class specificationList extends PolymerElement {
 			var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
 			toast.text = error;
 			toast.open();
-			if(!grid.size) {
-				grid.size = 0;
-			}
 			callback([]);
 		}
 		if(ajax.loading) {

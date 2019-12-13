@@ -90,11 +90,11 @@ class userList extends PolymerElement {
 
 	_getLog(params, callback) {
 		var grid = this;
+		if(!grid.size) {
+			grid.size = 0;
+		}
 		var userList = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-user-list');
 		var ajax = userList.shadowRoot.getElementById('getUserAjax');
-//    var startRange = params.page * params.pageSize + 1;
-//    var endRange = startRange + params.pageSize - 1;
-//    var headers = {"Accept": "application/json", "Range": "items=" + startRange + "-" + endRange};
 		if(ajax.etag && params.page > 0) {
 			headers['If-Range'] = ajax.etag;
 		}
@@ -142,9 +142,6 @@ class userList extends PolymerElement {
 			var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
 			toast.text = error;
 			toast.open();
-			if(!grid.size) {
-				grid.size = 0;
-			}
 			callback([]);
 		}
 		if(ajax.loading) {
