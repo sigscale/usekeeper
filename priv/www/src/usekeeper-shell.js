@@ -282,7 +282,7 @@ class UseKeeper extends PolymerElement {
 		// statement, so break it up.
 		switch (page) {
 			case 'usageView':
-				// import('./usekeeper-usage-list.js');
+				import('./usekeeper-usage-list.js');
 				break;
 			case 'specView':
 				import('./usekeeper-spec-update.js');
