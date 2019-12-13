@@ -24,7 +24,7 @@
 %% export the usekeeper public API
 -export([add_user/2, add_user/4, list_users/0, get_user/1, delete_user/1,
 		add_usage_spec/1, delete_usage_spec/1, query/6,
-		add_usage/1, query_usage/4]).
+		add_usage/1, query_usage/5]).
 
 %% export the usekeeper private API
 -export([]).
@@ -308,12 +308,13 @@ add_usage(Usage) ->
 			{error, Reason}
 	end.
 
--spec query_usage(Cont, Size, Sort, MatchSpec) -> Result
+-spec query_usage(Cont, Size, Sort, MatchSpec, CountOnly) -> Result
 	when
 		Cont :: start | any(),
 		Size :: pos_integer() | undefined,
 		Sort :: [integer()],
 		MatchSpec :: ets:match_pattern() | '_',
+		CountOnly :: boolean(),
 		Result :: {Cont1, [term()], Total} | {error, Reason},
 		Cont1 :: eof | any(),
 		Total :: non_neg_integer(),
@@ -334,27 +335,38 @@ add_usage(Usage) ->
 %% 	{@link //erts. erts} User's Guide for definition of
 %% 	Match Specifications.
 %%
-query_usage(Cont, undefined, Sort, MatchSpec) when is_list(Sort) ->
+%%    If `CountOnly' is `true' the result list will be empty.
+%%
+query_usage(Cont, undefined, Sort, MatchSpec, CountOnly)
+		when is_list(Sort), is_boolean(CountOnly) ->
 	{ok, Size} = application:get_env(usekeeper, rest_page_size),
-	query_usage1(disk_log:chunk(usage, Cont, Size), Sort, MatchSpec);
-query_usage(Cont, Size, Sort, MatchSpec)
+	query_usage1(Cont, Size, Sort, MatchSpec, CountOnly);
+query_usage(Cont, Size, Sort, MatchSpec, CountOnly)
+		when is_integer(Size), is_list(Sort), is_boolean(CountOnly) ->
+	query_usage1(Cont, Size, Sort, MatchSpec, CountOnly).
+%% @hidden
+query_usage1(_Cont, Size, Sort, '_', true)
 		when is_integer(Size), is_list(Sort) ->
-	query_usage1(disk_log:chunk(usage, Cont, Size), Sort, MatchSpec).
+	{no_items, N} = lists:keyfind(no_items, 1, disk_log:info(usage)),
+	{eof, Size, N};
+query_usage1(Cont, Size, Sort, MatchSpec, false)
+		when is_integer(Size), is_list(Sort) ->
+	query_usage2(disk_log:chunk(usage, Cont, Size), Sort, MatchSpec, false).
 %% @hidden
-query_usage1(eof, _Sort, _MatchSpec) ->
+query_usage2(eof, _Sort, _MatchSpec, _CountOnly) ->
 	{eof, [], 0};
-query_usage1({error, Reason}, _Sort, _MatchSpec) ->
+query_usage2({error, Reason}, _Sort, _MatchSpec, _CountOnly) ->
 	{error, Reason};
-query_usage1({Cont, Chunk, 0}, Sort, '_') when is_list(Chunk) ->
-	query_usage2(Cont, Chunk, length(Chunk), lists:reverse(Sort));
-query_usage1({Cont, Chunk}, Sort, '_') when is_list(Chunk) ->
-	query_usage2(Cont, Chunk, length(Chunk), lists:reverse(Sort)).
+query_usage2({Cont, Chunk, 0}, Sort, '_', false) when is_list(Chunk) ->
+	query_usage3(Cont, Chunk, length(Chunk), lists:reverse(Sort));
+query_usage2({Cont, Chunk}, Sort, '_', false) when is_list(Chunk) ->
+	query_usage3(Cont, Chunk, length(Chunk), lists:reverse(Sort)).
 %% @hidden
-query_usage2(Cont, Objects, Total, [H | T]) when H > 0 ->
-	query_usage2(Cont, lists:keysort(H, Objects), Total, T);
-query_usage2(Cont, Objects, Total, [H | T]) when H < 0 ->
-	query_usage2(Cont, lists:reverse(lists:keysort(-H, Objects)), Total, T);
-query_usage2(Cont, Objects, Total, []) ->
+query_usage3(Cont, Objects, Total, [H | T]) when H > 0 ->
+	query_usage3(Cont, lists:keysort(H, Objects), Total, T);
+query_usage3(Cont, Objects, Total, [H | T]) when H < 0 ->
+	query_usage3(Cont, lists:reverse(lists:keysort(-H, Objects)), Total, T);
+query_usage3(Cont, Objects, Total, []) ->
 	{Cont, Objects, Total}.
 
 %%----------------------------------------------------------------------

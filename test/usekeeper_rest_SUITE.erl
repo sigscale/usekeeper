@@ -119,7 +119,7 @@ sequences() ->
 %%
 all() ->
 	[post_usage_specification, get_usage_specifications, delete_usage_specification,
-	patch_usage_specification, post_usage, get_users].
+	patch_usage_specification, post_usage, get_users, get_usage].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -348,6 +348,29 @@ post_usage(Config) ->
 	true = is_integer(Int),
 	true = is_map(Usage).
 
+get_usage(Config) ->
+	F = fun(_F, 0) ->
+				ok;
+			(F, N) ->
+				Usage = usekeeper_test_lib:voice_usage(),
+				{ok, _UsageLog} = usekeeper:add_usage(Usage),
+				F(F, N - 1)
+	end,
+	ok = F(F, 5),
+	HostUrl = ?config(host_url, Config),
+	PathUsageSpec = ?PathUsage ++ "usage",
+	CollectionUrl = HostUrl ++ PathUsageSpec,
+	Accept = {"accept", "application/json"},
+	Request = {CollectionUrl, [Accept, auth_header()]},
+	{ok, Result} = httpc:request(get, Request, [], []),
+	{{"HTTP/1.1", 200, _OK}, Headers, ResponseBody} = Result,
+	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
+	ContentLength = integer_to_list(length(ResponseBody)),
+	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
+	{ok, UsageLogs} = zj:decode(ResponseBody),
+	true = length(UsageLogs) >= 5,
+	true = lists:all(fun is_usage_log/1, UsageLogs).
+
 %%---------------------------------------------------------------------
 %%  Internal functions
 %%---------------------------------------------------------------------
@@ -379,5 +402,12 @@ is_usage_spec(#{"id" := Id, "name" := Name, "description" := Description,
 		when is_list(Id), is_list(Name), is_list(Description),
 		is_list(StartTime), is_list(EndTime), is_map(UsageSpecChars) ->
 	true;
-is_usage_spec(_) ->
+is_usage_spec(_U) ->
+	false.
+
+is_usage_log([TS, N, #{"usageCharacteristic" := UsageChars,
+		"ratedProductUsage" := Rated}]) when is_list(UsageChars),
+		is_list(Rated), is_integer(TS), is_integer(N) ->
+	true;
+is_usage_log(_) ->
 	false.
