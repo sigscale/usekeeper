@@ -11,7 +11,7 @@ beam_DATA = usekeeper_app.beam \
 			usekeeper_sup.beam \
 			usekeeper_server.beam \
 			usekeeper_rest.beam \
-			usekeeper_rest_usage_specification.beam \
+			usekeeper_rest_res_usage_specification.beam \
 			usekeeper_rest_res_usage.beam \
 			mod_usekeeper_rest_accepted_content.beam \
 			mod_usekeeper_rest_post.beam \

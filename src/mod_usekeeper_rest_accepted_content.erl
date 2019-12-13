@@ -65,10 +65,10 @@ receive after 4000 -> ok end,
 									Method, usekeeper_rest_res_user, Data);
 						["usageManagement", "v4", "usageSpecification"] ->
 							check_content_type_header(Headers,
-									Method, usekeeper_rest_usage_specification, Data);
+									Method, usekeeper_rest_res_usage_specification, Data);
 						["usageManagement", "v4", "usageSpecification", _Id] ->
 							check_content_type_header(Headers,
-									Method, usekeeper_rest_usage_specification, Data);
+									Method, usekeeper_rest_res_usage_specification, Data);
 						["usageManagement", "v4", "usage"] ->
 							check_content_type_header(Headers,
 									Method, usekeeper_rest_res_usage, Data);

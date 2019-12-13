@@ -1,4 +1,4 @@
-%%% usekeeper_rest_usage_specification.erl
+%%% usekeeper_rest_res_usage_specification.erl
 %%% vim: ts=3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% @copyright 2019 SigScale Global Inc.
@@ -20,7 +20,7 @@
 %%%
 %%%   Handle `UsageSpecification' collection.
 %%%
--module(usekeeper_rest_usage_specification).
+-module(usekeeper_rest_res_usage_specification).
 -copyright('Copyright (c) 2019 SigScale Global Inc.').
 
 -export([content_types_accepted/0, content_types_provided/0]).

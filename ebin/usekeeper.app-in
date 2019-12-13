@@ -5,7 +5,7 @@
 				usekeeper_sup,
 				usekeeper_server,
 				usekeeper_rest,
-				usekeeper_rest_usage_specification,
+				usekeeper_rest_res_usage_specification,
 				usekeeper_rest_res_usage,
 				mod_usekeeper_rest_accepted_content,
 				mod_usekeeper_rest_post,
