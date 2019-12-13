@@ -108,6 +108,10 @@ do_get(Resource, #mod{parsed_header = Headers, method = Method} = ModData,
 		["usageManagement", "v4", "usageSpecification"], Query) ->
 	do_response(ModData,
 			Resource:get_usage_specifications(Method, Query, Headers));
+do_get(Resource, #mod{parsed_header = Headers, method = Method} = ModData,
+		["usageManagement", "v4", "usage"], Query) ->
+	do_response(ModData,
+			Resource:get_usage(Method, Query, Headers));
 do_get(_, #mod{data = Data}, _, _) ->
 	{proceed, Data}.
 
