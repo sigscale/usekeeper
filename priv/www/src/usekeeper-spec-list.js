@@ -42,7 +42,7 @@ class specificationList extends PolymerElement {
 					<template class="header">
 						Class
 					</template>
-					<template>[[item.class]]</template>
+					<template>[[item.type]]</template>
 				</vaadin-grid-column>
 				<vaadin-grid-column width="8ex">
 					<template class="header">
@@ -156,7 +156,7 @@ class specificationList extends PolymerElement {
 						}
 					}
 					if(request.response[index]["@type"]) {
-						newRecord.class = request.response[index]["@type"];
+						newRecord.type = request.response[index]["@type"];
 					}
 					if(request.response[index]["@baseType"]) {
 						newRecord.base = request.response[index]["@baseType"];
