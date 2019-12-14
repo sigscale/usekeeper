@@ -19,6 +19,21 @@
 			"type": "image/png"
 		},
 		{
+			"src": "images/manifest/sigscale-icon-144x144.png",
+			"sizes": "144x144",
+			"type": "image/png"
+		},
+		{
+			"src": "images/manifest/sigscale-icon-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "images/manifest/sigscale-icon-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
 			"src": "images/manifest/sigscale-logo-232x132.png",
 			"sizes": "232x132",
 			"type": "image/png"
