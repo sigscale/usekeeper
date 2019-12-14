@@ -18,6 +18,9 @@ import '@polymer/paper-progress/paper-progress.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-item/paper-item.js'
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
+import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/iron-collapse/iron-collapse.js';
 import './style-element.js';
 
 class specificationUpdate extends PolymerElement {
@@ -55,6 +58,37 @@ class specificationUpdate extends PolymerElement {
 						label="Base"
 						value="{{specificationBase}}">
 				</paper-input>
+				<div>
+					<span>Characteristics</span>
+						<paper-icon-button
+							icon="arrow-drop-down"
+							on-click="_collapseChars">
+						</paper-icon-button>
+				</div>
+				<iron-collapse id="charSpecCollapse">
+					<template is="dom-repeat" items="[[specificationChars]]">
+						<div>
+							<hr>
+							<paper-input
+									label="Name"
+									value="{{item.name}}"
+									disabled>
+							</paper-input>
+							<paper-input
+									label="Description"
+									value="{{item.description}}">
+							</paper-input>
+							<paper-input
+									label="ValueType"
+									allowed-pattern="[a-z]"
+									pattern="array|boolean|number|object|string"
+									auto-validate
+									error-message="invalid json type"
+									value="{{item.valueType}}">
+							</paper-input>
+						</div>
+					</template>
+				</iron-collapse>
 				<div class="buttons">
 					<paper-button
 							raised
@@ -117,7 +151,7 @@ class specificationUpdate extends PolymerElement {
 				type: String
 			},
 			specificationChars: {
-				type: String
+				type: Array
 			}
 		}
 	}
@@ -194,6 +228,15 @@ class specificationUpdate extends PolymerElement {
 		toast.text = event.detail.request.xhr.statusText;
 		toast.open();
 	}
+
+	_collapseChars(event) {
+		if(this.$.charSpecCollapse.opened == false) {
+			this.$.charSpecCollapse.show();
+		} else {
+			this.$.charSpecCollapse.hide();
+		}
+	}
+
 }
 
 window.customElements.define('usekeeper-spec-update', specificationUpdate);

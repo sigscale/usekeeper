@@ -162,11 +162,7 @@ class specificationList extends PolymerElement {
 						newRecord.base = request.response[index]["@baseType"];
 					}
 					if(request.response[index].usageSpecCharacteristic) {
-						newRecord.usageSpecCharacteristic = new Array();
-						var specObj = request.response[index].usageSpecCharacteristic;
-						for(var Name in specObj) {
-							newRecord.usageSpecCharacteristic.push({name: Name, value: specObj[Name]});
-						}
+						newRecord.chars = request.response[index].usageSpecCharacteristic;
 					}
 					vaadinItems[index] = newRecord;
 				}
