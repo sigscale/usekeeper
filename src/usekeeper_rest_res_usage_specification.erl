@@ -286,13 +286,17 @@ usage_specification([end_date | T],
 usage_specification([characteristic | T],
 		#use_spec{characteristic = UsageSpecChar} = R, Acc)
 		when is_map(UsageSpecChar) ->
+	F = fun(Key, Value, Acc) ->
+				[Value | Acc]
+	end,
 	usage_specification(T, R,
-			Acc#{"usageSpecCharacteristic" => UsageSpecChar});
+			Acc#{"usageSpecCharacteristic" => maps:fold(F, [], UsageSpecChar)});
 usage_specification([characteristic | T],
-		#{"usageSpecCharacteristic" := UsageSpecChar} = M, Acc)
-		when is_map(UsageSpecChar) ->
+		#{"usageSpecCharacteristic" := UsageSpecCharArray} = M, Acc)
+		when is_list(UsageSpecCharArray) ->
+	CharList = [{Name, CharMap} || #{"name" := Name} = CharMap <- UsageSpecCharArray],
 	usage_specification(T, M,
-			Acc#use_spec{characteristic = UsageSpecChar});
+			Acc#use_spec{characteristic = maps:from_list(CharList)});
 usage_specification([_H | T], R, Acc) ->
 	usage_specification(T, R, Acc);
 usage_specification([], _, Acc) ->
