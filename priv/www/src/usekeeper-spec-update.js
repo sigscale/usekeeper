@@ -167,6 +167,7 @@ class specificationUpdate extends PolymerElement {
 			this.specificationDescription = item.description;
 			this.specificationType = item.type;
 			this.specificationChars = item.chars;
+			this.$.charSpecCollapse.opened == false
 			this.$.specificationUpdateModal.open();
 		} else {
 			this.specificationId = null;
@@ -179,6 +180,7 @@ class specificationUpdate extends PolymerElement {
 
 	_cancel() {
 		this.$.specificationUpdateModal.close();
+		this.$.charSpecCollapse.opened == false
 		this.specificationId = null;
 		this.specificationName = null;
 		this.specificationDescription = null;

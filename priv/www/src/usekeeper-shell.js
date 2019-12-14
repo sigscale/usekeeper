@@ -176,7 +176,7 @@ class UseKeeper extends PolymerElement {
 				} else {
 					console.log('Have patience dude!');
 				}
-			break;
+				break;
 			case "usageView":
 				var usage = this.shadowRoot.getElementById('usageList');
 				if (!usage.loading) {
@@ -186,7 +186,7 @@ class UseKeeper extends PolymerElement {
 				} else {
 					console.log('Have patience dude!');
 				}
-			break;
+				break;
 			case "userView":
 				var user = this.shadowRoot.getElementById('userList');
 				if (!user.loading) {
@@ -196,7 +196,7 @@ class UseKeeper extends PolymerElement {
 				} else {
 					console.log('Have patience dude!');
 				}
-			break;
+				break;
 		}
 	}
 
