@@ -14,7 +14,9 @@ MODULES = usekeeper-shell.js \
 		usekeeper-spec-update.js \
 		usekeeper-usage-list.js \
 		usekeeper-user-add.js \
-		usekeeper-user-list.js
+		usekeeper-user-list.js \
+		usekeeper-icons.js \
+		style-element.js
 
 $(abs_builddir)/index.html:
 	for i in $(LINKS); do \
