@@ -67,7 +67,9 @@ class specificationUpdate extends PolymerElement {
 							on-click="_collapseChars">
 						</paper-icon-button>
 				</div>
-				<iron-collapse id="charSpecCollapse">
+				<iron-collapse
+						id="charSpecCollapse"
+						opened="{{charSpecOpened}}">
 					<template is="dom-repeat" items="[[specificationChars]]">
 						<div>
 							<hr>
@@ -136,6 +138,10 @@ class specificationUpdate extends PolymerElement {
 			activeItem: {
 				type: Object,
 				observer: '_activeItemChanged'
+			},
+			charSpecOpened: {
+				type: Boolean,
+				observer: '_resize'
 			},
 			specificationId: {
 				type: String
@@ -235,6 +241,10 @@ class specificationUpdate extends PolymerElement {
 		var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
 		toast.text = event.detail.request.xhr.statusText;
 		toast.open();
+	}
+
+	_resize() {
+		this.$.specificationUpdateModal.notifyResize();
 	}
 
 	_collapseChars(event) {
