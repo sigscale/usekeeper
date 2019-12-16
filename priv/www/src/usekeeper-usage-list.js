@@ -8,11 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
-import './usekeeper-icons.js';
 import './style-element.js';
 
 class usageList extends PolymerElement {
@@ -105,14 +103,14 @@ class usageList extends PolymerElement {
 		if(!grid.size) {
 			grid.size = 0;
 		}
-		var usageList = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
-		var ajax = usageList.shadowRoot.getElementById('getUsageAjax');
+		var usage = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
+		var ajax = usage.shadowRoot.getElementById('getUsageAjax');
 		if(ajax.etag && params.page > 0) {
 			headers['If-Range'] = ajax.etag;
 		}
 		var handleAjaxResponse = function(request) {
 			if(request) {
-				usageList.etag = request.xhr.getResponseHeader('ETag');
+				usage.etag = request.xhr.getResponseHeader('ETag');
 				var range = request.xhr.getResponseHeader('Content-Range');
 				var range1 = range.split("/");
 				var range2 = range1[0].split("-");
@@ -124,8 +122,14 @@ class usageList extends PolymerElement {
 				var vaadinItems = new Array();
 				for(var index in request.response) {
 					var newRecord = new Object();
-					if(request.response[index].date) {
-						newRecord.date = request.response[index].date;
+					if(request.response[index].id) {
+						newRecord.id = request.response[index].id;
+					}
+					if(request.response[index].name) {
+						newRecord.name = request.response[index].name;
+					}
+					if(request.response[index].description) {
+						newRecord.description = request.response[index].description;
 					}
 					if(request.response[index].description) {
 						newRecord.description = request.response[index].description;
@@ -135,6 +139,9 @@ class usageList extends PolymerElement {
 					}
 					if(request.response[index].status) {
 						newRecord.status1 = request.response[index].status;
+					}
+					if(request.response[index].date) {
+						newRecord.date = request.response[index].date;
 					}
 					for(var index1 in request.response[index].ratedProductUsage) {
 						var rate = request.response[index].ratedProductUsage[index1];
@@ -154,7 +161,7 @@ class usageList extends PolymerElement {
 			}
 		};
 		var handleAjaxError = function(error) {
-			usageList.etag = null;
+			usage.etag = null;
 			var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
 			toast.text = error;
 			toast.open();
@@ -164,8 +171,8 @@ class usageList extends PolymerElement {
 			ajax.lastRequest.completes.then(function(request) {
 				var startRange = params.page * params.pageSize + 1;
 				ajax.headers['Range'] = "items=" + startRange + "-" + endRange;
-				if (usageList.etag && params.page > 0) {
-					ajax.headers['If-Range'] = usageList.etag;
+				if (usage.etag && params.page > 0) {
+					ajax.headers['If-Range'] = usage.etag;
 				} else {
 					delete ajax.headers['If-Range'];
 				}
@@ -175,8 +182,8 @@ class usageList extends PolymerElement {
 			var startRange = params.page * params.pageSize + 1;
 			var endRange = startRange + params.pageSize - 1;
 			ajax.headers['Range'] = "items=" + startRange + "-" + endRange;
-			if (usageList.etag && params.page > 0) {
-				ajax.headers['If-Range'] = usageList.etag;
+			if (usage.etag && params.page > 0) {
+				ajax.headers['If-Range'] = usage.etag;
 			} else {
 				delete ajax.headers['If-Range'];
 			}
