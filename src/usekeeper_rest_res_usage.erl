@@ -229,8 +229,9 @@ query_page(PageServer, Etag, _Query, _Filters, Start, End) ->
 		{error, Status} ->
 			{error, Status};
 		{Events, ContentRange} ->
-			UsageLogs = [{TS, N, usage(Usage)} || {TS, N, Usage} <- Events],
-			Body = zj:encode(UsageLogs),
+%			Body = [{TS, N, zj:encode(usage(Usage))} || {TS, N, Usage} <- Events],
+			Usages = [usage(Usage) || {_TS, _N, Usage} <- Events],
+			Body = zj:encode(Usages),
 			Headers = [{content_type, "application/json"},
 				{etag, Etag}, {accept_ranges, "items"},
 				{content_range, ContentRange}],
