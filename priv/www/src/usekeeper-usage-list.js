@@ -35,13 +35,13 @@ class usageList extends PolymerElement {
 				</vaadin-grid-column>
 				<vaadin-grid-column>
 					<template class="header">
-						Exclude Amount
+						Excluded Amount
 					</template>
 					<template>[[item.taxExcludedRatingAmount]]</template>
 				</vaadin-grid-column>
 				<vaadin-grid-column>
 					<template class="header">
-						Include Amount
+						Included Amount
 					</template>
 					<template>[[item.taxIncludedRatingAmount]]</template>
 				</vaadin-grid-column>
@@ -49,7 +49,7 @@ class usageList extends PolymerElement {
 					<template class="header">
 						Status
 					</template>
-					<template>[[item.status1]]</template>
+					<template>[[item.status]]</template>
 				</vaadin-grid-column>
 				<vaadin-grid-column>
 					<template class="header">
@@ -131,14 +131,11 @@ class usageList extends PolymerElement {
 					if(request.response[index].description) {
 						newRecord.description = request.response[index].description;
 					}
-					if(request.response[index].description) {
-						newRecord.description = request.response[index].description;
-					}
 					if(request.response[index].type) {
 						newRecord.type = request.response[index].type;
 					}
 					if(request.response[index].status) {
-						newRecord.status1 = request.response[index].status;
+						newRecord.status = request.response[index].status;
 					}
 					if(request.response[index].date) {
 						newRecord.date = request.response[index].date;
