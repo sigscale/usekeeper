@@ -197,7 +197,7 @@ class ukHelp extends PolymerElement {
 		this.$.helpSpecification.close();
 		this.$.helpUsage.close();
 		this.$.helpUser.close();
-		this.$.helpMenu.close();
+		this.$.helpMenu.open();
 	}
 
 	_dialog(newValue) {
