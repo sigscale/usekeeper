@@ -49,7 +49,6 @@ class specificationUpdate extends PolymerElement {
 				</paper-input>
 				<paper-textarea
 						label="Description"
-						maxRows="4"
 						value="{{specificationDescription}}">
 				</paper-textarea>
 				<paper-input
@@ -79,7 +78,7 @@ class specificationUpdate extends PolymerElement {
 									disabled>
 							</paper-input>
 							<paper-textarea
-									label="Description1"
+									label="Description"
 									value="{{item.description}}">
 							</paper-textarea>
 							<paper-input
