@@ -16,6 +16,7 @@ import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/app-layout/app-toolbar/app-toolbar.js';
 import '@polymer/paper-progress/paper-progress.js';
 import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-input/paper-textarea.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-item/paper-item.js'
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
@@ -46,10 +47,11 @@ class specificationUpdate extends PolymerElement {
 						label="Name"
 						value="{{specificationName}}">
 				</paper-input>
-				<paper-input
+				<paper-textarea
 						label="Description"
+						maxRows="4"
 						value="{{specificationDescription}}">
-				</paper-input>
+				</paper-textarea>
 				<paper-input
 						label="Class"
 						value="{{specificationType}}">
@@ -74,10 +76,10 @@ class specificationUpdate extends PolymerElement {
 									value="{{item.name}}"
 									disabled>
 							</paper-input>
-							<paper-input
-									label="Description"
+							<paper-textarea
+									label="Description1"
 									value="{{item.description}}">
-							</paper-input>
+							</paper-textarea>
 							<paper-input
 									label="ValueType"
 									allowed-pattern="[a-z]"
