@@ -87,6 +87,8 @@ styleElement.innerHTML = `<template>
          }
          .dialog {
             overflow: auto;
+				max-width: 60%;
+				max-height: 80%;
          }
          .help {
             position: fixed;
