@@ -152,7 +152,7 @@ class UseKeeper extends PolymerElement {
 					active="[[overFlowActive]]">
 			</usekeeper-help>
 			<usekeeper-user-add
-					id="userAdd"
+					id="userAdd">
 			</usekeeper-user-add>
 			<usekeeper-spec-add
 					id="specAdd">
