@@ -126,22 +126,22 @@ class UseKeeper extends PolymerElement {
 							class="drawer-list"
 							role="navigation">
 						<a name="specView" href="[[rootPath]]specView">
-								<paper-icon-button
+							<paper-icon-button
 									icon="my-icons:spec">
-								</paper-icon-button>
-									Specification
+							</paper-icon-button>
+							Specification
 						</a>
 						<a name="usageView" href="[[rootPath]]usageView">
-								<paper-icon-button
+							<paper-icon-button
 									icon="my-icons:usage">
-								</paper-icon-button>
-									Usage
+							</paper-icon-button>
+							Usage
 						</a>
 						<a name="userView" href="[[rootPath]]userView">
-								<paper-icon-button
+							<paper-icon-button
 									icon="my-icons:users">
-								</paper-icon-button>
-									User
+							</paper-icon-button>
+							User
 						</a>
 					</iron-selector>
 				</app-drawer>
