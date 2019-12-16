@@ -10,11 +10,8 @@
 
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import {} from '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
-import '@vaadin/vaadin-grid/vaadin-grid-column-group.js';
-import '@polymer/paper-fab/paper-fab.js';
 import './usekeeper-icons.js';
 import './style-element.js';
 
@@ -24,34 +21,50 @@ class usageList extends PolymerElement {
 			<style include="style-element">
 			</style>
 			<vaadin-grid id="usageGrid"
-					loading="{{loading}}">
-				<vaadin-grid-column width="6ex" flex-grow="10">
+					loading="{{loading}}"
+					active-item="{{activeItem}}">
+				<vaadin-grid-column>
 					<template class="header">
-						Name 
+						Date 
 					</template>
+					<template>[[item.date]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column width="10ex" flex-grow="20">
+				<vaadin-grid-column>
 					<template class="header">
 						Description 
 					</template>
+					<template>[[item.description]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column width="6ex" flex-grow="5">
+				<vaadin-grid-column>
 					<template class="header">
-						Class
+						Exclude Amount
 					</template>
+					<template>[[item.taxExcludedRatingAmount]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column width="8ex">
+				<vaadin-grid-column>
 					<template class="header">
-						Base
+						Include Amount
 					</template>
+					<template>[[item.taxIncludedRatingAmount]]</template>
+				</vaadin-grid-column>
+				<vaadin-grid-column>
+					<template class="header">
+						Status
+					</template>
+					<template>[[item.status]]</template>
+				</vaadin-grid-column>
+				<vaadin-grid-column>
+					<template class="header">
+						Type
+					</template>
+					<template>[[item.type]]</template>
 				</vaadin-grid-column>
 			</vaadin-grid>
-			<div class="add-button">
-				<paper-fab
-					icon="my-icons:add"
-					on-tap = "showAddSpecModal">
-				</paper-fab>
-			</div>
+			<iron-ajax
+				id="getUsageAjax"
+				url="usageManagement/v4/usage"
+				rejectWithRequest>
+			</iron-ajax>
 		`;
 	}
 
@@ -60,6 +73,11 @@ class usageList extends PolymerElement {
 			loading: {
 				type: Boolean,
 				notify: true
+			},
+			activeItem: {
+				type: Boolean,
+				notify: true,
+				observer: '_activeItemChanged'
 			},
 			etag: {
 				type: String,
@@ -74,7 +92,96 @@ class usageList extends PolymerElement {
 		grid.dataProvider = this._getUsage;
 	}
 
-	_getUsage(params) {
+	_activeItemChanged(item) {
+		if(item) {
+			this.$.usageGrid.selectedItems = item ? [item] : [];
+		} else {
+			this.$.usageGrid.selectedItems = [];
+		}
+	}
+
+	_getUsage(params, callback) {
+		var grid = this;
+		if(!grid.size) {
+			grid.size = 0;
+		}
+		var usageList = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
+		var ajax = usageList.shadowRoot.getElementById('getUsageAjax');
+		if(ajax.etag && params.page > 0) {
+			headers['If-Range'] = ajax.etag;
+		}
+		var handleAjaxResponse = function(request) {
+			if(request) {
+				usageList.etag = request.xhr.getResponseHeader('ETag');
+				var range = request.xhr.getResponseHeader('Content-Range');
+				var range1 = range.split("/");
+				var range2 = range1[0].split("-");
+				if (range1[1] != "*") {
+					grid.size = Number(range1[1]);
+				} else {
+					grid.size = Number(range2[1]) + grid.pageSize * 2;
+				}
+				var vaadinItems = new Array();
+				for(var index in request.response) {
+					var newRecord = new Object();
+					if(request.response[index].date) {
+						newRecord.date = request.response[index].date;
+					}
+					if(request.response[index].description) {
+						newRecord.description = request.response[index].description;
+					}
+					if(request.response[index].type) {
+						newRecord.type = request.response[index].type;
+					}
+					if(request.response[index].status) {
+						newRecord.status1 = request.response[index].status;
+					}
+					for(var index1 in request.response[index].ratedProductUsage) {
+						var rate = request.response[index].ratedProductUsage[index1];
+						if(rate.taxExcludedRatingAmount) {
+							newRecord.taxExcludedRatingAmount = rate.taxExcludedRatingAmount;
+						}
+						if(rate.taxIncludedRatingAmount) {
+							newRecord.taxIncludedRatingAmount = rate.taxIncludedRatingAmount;
+						}
+					}
+					vaadinItems[index] = newRecord;
+				}
+				callback(vaadinItems);
+			} else {
+				grid.size = 0;
+				callback([]);
+			}
+		};
+		var handleAjaxError = function(error) {
+			usageList.etag = null;
+			var toast = document.body.querySelector('usekeeper-shell').shadowRoot.getElementById('restError');
+			toast.text = error;
+			toast.open();
+			callback([]);
+		}
+		if(ajax.loading) {
+			ajax.lastRequest.completes.then(function(request) {
+				var startRange = params.page * params.pageSize + 1;
+				ajax.headers['Range'] = "items=" + startRange + "-" + endRange;
+				if (usageList.etag && params.page > 0) {
+					ajax.headers['If-Range'] = usageList.etag;
+				} else {
+					delete ajax.headers['If-Range'];
+				}
+				return ajax.generateRequest().completes;
+			}, handleAjaxError).then(handleAjaxResponse, handleAjaxError);
+		} else {
+			var startRange = params.page * params.pageSize + 1;
+			var endRange = startRange + params.pageSize - 1;
+			ajax.headers['Range'] = "items=" + startRange + "-" + endRange;
+			if (usageList.etag && params.page > 0) {
+				ajax.headers['If-Range'] = usageList.etag;
+			} else {
+				delete ajax.headers['If-Range'];
+			}
+			ajax.generateRequest().completes.then(handleAjaxResponse, handleAjaxError);
+		}
 	}
 }
 
