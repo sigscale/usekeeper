@@ -56,7 +56,7 @@ class ukHelp extends PolymerElement {
 			</paper-icon-item>
 			<paper-icon-item
 					class="menu-trigger menuitem"
-					on-click="helpId">
+					on-click="_help">
 				<iron-icon icon="my-icons:help" item-icon></iron-icon>
 					Help
 			</paper-icon-item>
@@ -70,49 +70,47 @@ class ukHelp extends PolymerElement {
 				<div main-title>Help</div>
 			</app-toolbar> 
 			<paper-icon-item
-					on-click="useSpecs">
+					on-click="_specification">
 					<iron-icon icon="my-icons:assignment" slot="item-icon"></iron-icon>
-						Specifications
+						Specification
 			</paper-icon-item>
 			<paper-icon-item
-					on-click="usage">
-					<iron-icon icon="my-icons:logIcon" slot="item-icon"></iron-icon>
+					on-click="_usage">
+					<iron-icon icon="my-icons:usage" slot="item-icon"></iron-icon>
 						Logs
 			</paper-icon-item>
 			<paper-icon-item
-					on-click="users">
+					on-click="_user">
 					<iron-icon icon="my-icons:users" slot="item-icon"></iron-icon>
 						Users
 			</paper-icon-item>
 		</paper-dialog>
-		<paper-dialog id="helpSpecs">
+		<paper-dialog class="dialog" id="helpSpecification">
 			<app-toolbar>
 				<paper-icon-button
-						slot="top"
 						icon="my-icons:arrow-back"
-						on-click="helpBack">
+						on-click="_back">
 				</paper-icon-button>
 				<div main-title>Help</div>
 			</app-toolbar> 
 			<paper-icon-item>
 				<iron-icon icon="my-icons:assignment" slot="item-icon"></iron-icon>
-				Specifications
+				Specification
 			</paper-icon-item>
 			<paper-dialog-scrollable>
-				<p>To access the <b>Specifications</b> view first open the navigation drawer
+				<p>To access the <b>Specification</b> view first open the navigation drawer
 				by selecting it's icon <iron-icon class="iconHelp" icon="menu"></iron-icon>
 				on the left of the toolbar at top. Select the
 				<iron-icon class="iconHelp" icon="my-icons:assignment"></iron-icon>
-				<b>Specifications</b> view from the navigation menu.</p>
+				<b>Specification</b> view from the navigation menu.</p>
 				<p>Usage Specifications are ...</p>
 			</paper-dialog-scrollable>
 		</paper-dialog>
-		<paper-dialog id="helpUsage">
+		<paper-dialog class="dialog" id="helpUsage">
 			<app-toolbar>
 				<paper-icon-button
-						slot="top"
 						icon="my-icons:arrow-back"
-						on-click="helpBack">
+						on-click="_back">
 				</paper-icon-button>
 				<div main-title>Usage Records</div>
 			</app-toolbar> 
@@ -128,7 +126,28 @@ class ukHelp extends PolymerElement {
 				<b>Usage</b> view from the navigation menu.</p>
 			</paper-dialog-scrollable>
 		</paper-dialog>
-		<paper-dialog id="aboutHelp">
+		<paper-dialog class="dialog" id="helpUser">
+			<app-toolbar>
+				<paper-icon-button
+						icon="my-icons:arrow-back"
+						on-click="_back">
+				</paper-icon-button>
+				<div main-title>Users</div>
+			</app-toolbar> 
+			<paper-icon-item>
+				<iron-icon icon="my-icons:users" slot="item-icon"></iron-icon>
+				User
+			</paper-icon-item>
+			<paper-dialog-scrollable>
+				<p>To access the <b>User</b> view first open the navigation drawer
+				by selecting it's icon <iron-icon class="iconHelp" icon="menu"></iron-icon>
+				on the left of the toolbar at top. Select the
+				<iron-icon class="iconHelp" icon="my-icons:users"></iron-icon>
+				<b>User</b> view from the navigation menu.</p>
+				<p>Users are are ...</p>
+			</paper-dialog-scrollable>
+		</paper-dialog>
+		<paper-dialog class="dialog" id="aboutHelp">
 			<app-toolbar>
 				<div main-title>About</div>
 			</app-toolbar> 
@@ -158,18 +177,26 @@ class ukHelp extends PolymerElement {
 		this.$.overFlowMenu.close();
 		this.$.aboutHelp.open();
 	}
-	helpId(event) {
+	_help(event) {
 		this.$.overFlowMenu.close();
 		this.$.helpMenu.open();
 	}
-	usage(event) {
+	_specification(event) {
 		this.$.helpMenu.close();
-		this.$.helpLogs.open();
+		this.$.helpSpecification.open();
 	}
-	helpBack(event) {
+	_usage(event) {
+		this.$.helpMenu.close();
+		this.$.helpUsage.open();
+	}
+	_user(event) {
+		this.$.helpMenu.close();
+		this.$.helpUser.open();
+	}
+	_back(event) {
+		this.$.helpSpecification.close();
 		this.$.helpUsage.close();
-		this.$.helpLogs.close();
-		this.$.helpUsers.close();
+		this.$.helpUser.close();
 		this.$.helpMenu.close();
 	}
 

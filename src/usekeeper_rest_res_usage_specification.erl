@@ -286,8 +286,8 @@ usage_specification([end_date | T],
 usage_specification([characteristic | T],
 		#use_spec{characteristic = UsageSpecChar} = R, Acc)
 		when is_map(UsageSpecChar) ->
-	F = fun(Key, Value, Acc) ->
-				[Value | Acc]
+	F = fun(_Key, Value, AccIn) ->
+				[Value | AccIn]
 	end,
 	usage_specification(T, R,
 			Acc#{"usageSpecCharacteristic" => maps:fold(F, [], UsageSpecChar)});

@@ -91,14 +91,6 @@ styleElement.innerHTML = `<template>
 				max-width: 60%;
 				max-height: 80%;
          }
-         .help {
-            position: fixed;
-            min-width: 20em;
-            right: -36px;
-            top: 41px;
-            overflow: auto;
-            display: inline-grid;
-         }
 			paper-dialog app-toolbar {
 				color: white;
 				background-color: #bc5100;
@@ -134,6 +126,18 @@ styleElement.innerHTML = `<template>
 					font-size: 24px;
 					font-weight: 400;
 				};
+			}
+         .help {
+            position: fixed;
+            min-width: 20em;
+            right: -36px;
+            top: 41px;
+            overflow: auto;
+            display: inline-grid;
+         }
+			paper-dialog-scrollable p {
+				margin-left: 40px;
+				margin-right: 40px;
 			}
 			.grouptitle {
 				text-align: center;

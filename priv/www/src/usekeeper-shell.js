@@ -133,7 +133,7 @@ class UseKeeper extends PolymerElement {
 						</a>
 						<a name="usageView" href="[[rootPath]]usageView">
 								<paper-icon-button
-									icon="my-icons:usageIcon">
+									icon="my-icons:usage">
 								</paper-icon-button>
 									Usage
 						</a>
