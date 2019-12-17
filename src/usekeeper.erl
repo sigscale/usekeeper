@@ -297,10 +297,13 @@ query3(Cont, Objects, Total, []) ->
 		UsageLog :: usage_log(),
 		Reason :: term().
 %% @doc Log a new Usage Event.
-add_usage(Usage) ->
+add_usage(#{"date" := Date, "type" := Type} = Usage)
+		when is_list(Date), is_list(Type) ->
 	TS = erlang:system_time(millisecond),
 	N = erlang:unique_integer([positive]),
-	UsageLog = list_to_tuple([TS, N, Usage]),
+	ID = integer_to_list(TS) ++ integer_to_list(N),
+	Href = "/usageManagement/v4/usage/" ++ ID,
+	UsageLog = {TS, N, Usage#{"id" => ID, "href" => Href}},
 	case disk_log:log(usage, UsageLog) of
 		ok ->
 			{ok, UsageLog};
