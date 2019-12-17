@@ -61,7 +61,7 @@ class specificationUpdate extends PolymerElement {
 				</paper-input>
 				<div>
 					<span>Characteristics</span>
-						<paper-icon-button
+						<paper-icon-button id="charSpecCollapseButton"
 							icon="arrow-drop-down"
 							on-click="_collapseChars">
 						</paper-icon-button>
@@ -249,8 +249,10 @@ class specificationUpdate extends PolymerElement {
 	_collapseChars(event) {
 		if(this.$.charSpecCollapse.opened == false) {
 			this.$.charSpecCollapse.show();
+			this.$.charSpecCollapseButton.icon = "arrow-drop-up";
 		} else {
 			this.$.charSpecCollapse.hide();
+			this.$.charSpecCollapseButton.icon = "arrow-drop-down";
 		}
 	}
 
