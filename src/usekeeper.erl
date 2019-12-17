@@ -345,7 +345,7 @@ query_usage(Cont, Size, Sort, MatchSpec, CountOnly)
 		when is_integer(Size), is_list(Sort), is_boolean(CountOnly) ->
 	query_usage1(Cont, Size, Sort, MatchSpec, CountOnly).
 %% @hidden
-query_usage1(_Cont, Size, Sort, '_', true) ->
+query_usage1(_Cont, Size, _Sort, '_', true) ->
 	{no_items, N} = lists:keyfind(no_items, 1, disk_log:info(usage)),
 	{eof, Size, N};
 query_usage1(Cont, Size, Sort, '_', false) ->
