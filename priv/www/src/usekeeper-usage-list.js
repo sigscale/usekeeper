@@ -11,6 +11,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
+import '@polymer/paper-fab/paper-fab.js';
 import './style-element.js';
 
 class usageList extends PolymerElement {
@@ -58,6 +59,12 @@ class usageList extends PolymerElement {
 					<template>[[item.type]]</template>
 				</vaadin-grid-column>
 			</vaadin-grid>
+			<div class="add-button">
+				<paper-fab
+						icon="my-icons:add"
+						on-tap="_usageAddOpenModal">
+				</paper-fab>
+			</div>
 			<iron-ajax
 				id="getUsageAjax"
 				url="usageManagement/v4/usage"
