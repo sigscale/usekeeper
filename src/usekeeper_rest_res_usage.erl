@@ -58,9 +58,9 @@ post_usage(RequestBody) ->
 	try
 		{ok, Usage} = zj:decode(RequestBody),
 		case usekeeper:add_usage(usage(Usage)) of
-			{ok, {TS, N, U}} ->
-				UsageLog = {TS, N, usage(U)},
-				Body = zj:encode(UsageLog),
+			{ok, {_TS, _N, U}} ->
+%				UsageLog = {TS, N, usage(U)},
+				Body = zj:encode(usage(U)),
 				Headers = [{content_type, "application/json"}],
 				{ok, Headers, Body};
 			{error, _Reason} ->

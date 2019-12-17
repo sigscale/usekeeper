@@ -343,10 +343,10 @@ post_usage(Config) ->
 	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
 	ContentLength = integer_to_list(length(ResponseBody)),
 	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
-	{ok, [TS, Int, Usage]} = zj:decode(ResponseBody),
-	true = is_integer(TS),
-	true = is_integer(Int),
-	true = is_map(Usage).
+	{ok, #{"usageCharacteristic" := UsageChar,
+			"ratedProductUsage" := Rated}} = zj:decode(ResponseBody),
+	true = is_list(UsageChar),
+	true = is_list(Rated).
 
 get_usage(Config) ->
 	F = fun(_F, 0) ->
