@@ -11,7 +11,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
-import '@polymer/paper-fab/paper-fab.js';
+import '@vaadin/vaadin-grid/vaadin-grid-column-group.js';
 import './style-element.js';
 
 class usageList extends PolymerElement {
@@ -34,18 +34,29 @@ class usageList extends PolymerElement {
 					</template>
 					<template>[[item.description]]</template>
 				</vaadin-grid-column>
-				<vaadin-grid-column>
+				<vaadin-grid-column-group>
 					<template class="header">
-						Excluded Amount
+						<div class="grouptitle">Amount with Tax</div>
 					</template>
-					<template>[[item.taxExcludedRatingAmount]]</template>
-				</vaadin-grid-column>
-				<vaadin-grid-column>
-					<template class="header">
-						Included Amount
-					</template>
-					<template>[[item.taxIncludedRatingAmount]]</template>
-				</vaadin-grid-column>
+					<vaadin-grid-column>
+						<template class="header">
+							Excluded
+						</template>
+						<template>[[item.taxExcludedRatingAmount]]</template>
+					</vaadin-grid-column>
+					<vaadin-grid-column>
+						<template class="header">
+							Rate
+						</template>
+						<template>[[item.taxRate]]</template>
+					</vaadin-grid-column>
+					<vaadin-grid-column>
+						<template class="header">
+							Included
+						</template>
+						<template>[[item.taxIncludedRatingAmount]]</template>
+					</vaadin-grid-column>
+				</vaadin-grid-column-group>
 				<vaadin-grid-column>
 					<template class="header">
 						Status
@@ -59,12 +70,6 @@ class usageList extends PolymerElement {
 					<template>[[item.type]]</template>
 				</vaadin-grid-column>
 			</vaadin-grid>
-			<div class="add-button">
-				<paper-fab
-						icon="my-icons:add"
-						on-tap="_usageAddOpenModal">
-				</paper-fab>
-			</div>
 			<iron-ajax
 				id="getUsageAjax"
 				url="usageManagement/v4/usage"
@@ -154,6 +159,9 @@ class usageList extends PolymerElement {
 						}
 						if(rate.taxIncludedRatingAmount) {
 							newRecord.taxIncludedRatingAmount = rate.taxIncludedRatingAmount;
+						}
+						if(rate.taxRate) {
+							newRecord.taxRate = rate.taxRate;
 						}
 					}
 					vaadinItems[index] = newRecord;
