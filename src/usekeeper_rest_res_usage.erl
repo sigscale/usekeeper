@@ -58,9 +58,9 @@ post_usage(RequestBody) ->
 	try
 		{ok, Usage} = zj:decode(RequestBody),
 		case usekeeper:add_usage(usage(Usage)) of
-			{ok, {TS, N, U}} ->
-				UsageLog = {TS, N, usage(U)},
-				Body = zj:encode(UsageLog),
+			{ok, {_TS, _N, U}} ->
+%				UsageLog = {TS, N, usage(U)},
+				Body = zj:encode(usage(U)),
 				Headers = [{content_type, "application/json"}],
 				{ok, Headers, Body};
 			{error, _Reason} ->
@@ -160,8 +160,8 @@ usage(["usageCharacteristic" | T],
 	usage(T, U#{"usageCharacteristic" => UsageCharList});
 usage(["usageCharacteristic" | T],
 		#{"usageCharacteristic" := UsageChar} = U) when is_list(UsageChar) ->
-	UsageCharMap = list_to_map(UsageChar, 1, #{}),
-	usage(T, U#{"usageCharacteristic" => UsageCharMap});
+	CharList = [{Name, CharMap} || #{"name" := Name} = CharMap <- UsageChar],
+	usage(T, U#{"usageCharacteristic" => maps:from_list(CharList)});
 usage(["ratedProductUsage" | T],
 		#{"ratedProductUsage" := Rated} = U) when is_map(Rated) ->
 	I = maps:iterator(Rated),
@@ -169,8 +169,8 @@ usage(["ratedProductUsage" | T],
 	usage(T, U#{"ratedProductUsage" => RatedList});
 usage(["ratedProductUsage" | T],
 		#{"ratedProductUsage" := Rated} = U) when is_list(Rated) ->
-	RatedMap = list_to_map(Rated, 1, #{}),
-	usage(T, U#{"ratedProductUsage" => RatedMap});
+	RatedList = [{Tag, RatedMap} || #{"usageRatingTag" := Tag} = RatedMap <- Rated],
+	usage(T, U#{"ratedProductUsage" => maps:from_list(RatedList)});
 usage(["relatedParty" | T],
 		#{"relatedParty" := Related} = U) when is_map(Related) ->
 	I = maps:iterator(Related),
@@ -178,8 +178,8 @@ usage(["relatedParty" | T],
 	usage(T, U#{"relatedParty" => RelatedList});
 usage(["relatedParty" | T],
 		#{"relatedParty" := Related} = U) when is_list(Related) ->
-	RelatedMap = list_to_map(Related, 1, #{}),
-	usage(T, U#{"relatedParty" => RelatedMap});
+	RelatedList = [{Id, RelatedMap} || #{"id" := Id} = RelatedMap <- Related],
+	usage(T, U#{"relatedParty" => maps:from_list(RelatedList)});
 usage([_H | T], Usage) ->
 	usage(T, Usage);
 usage([], Usage) ->
@@ -188,13 +188,6 @@ usage([], Usage) ->
 %%----------------------------------------------------------------------
 %%  internal functions
 %%----------------------------------------------------------------------
-
-%% @hidden
-list_to_map([H | T], N, Acc) ->
-	Key = integer_to_list(N),
-	list_to_map(T, N + 1, Acc#{Key => H});
-list_to_map([], _N, Acc) ->
-	Acc.
 
 %% @hidden
 map_to_list({_Key, Value, I}, Acc) ->
