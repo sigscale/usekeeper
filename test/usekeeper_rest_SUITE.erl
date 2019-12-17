@@ -375,9 +375,9 @@ get_usage(Config) ->
 	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
 	ContentLength = integer_to_list(length(ResponseBody)),
 	{_, ContentLength} = lists:keyfind("content-length", 1, Headers),
-	{ok, UsageLogs} = zj:decode(ResponseBody),
-	true = length(UsageLogs) >= 5,
-	true = lists:all(fun is_usage_log/1, UsageLogs).
+	{ok, Usages} = zj:decode(ResponseBody),
+	true = length(Usages) >= 5,
+	true = lists:all(fun is_usage/1, Usages).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
@@ -413,9 +413,9 @@ is_usage_spec(#{"id" := Id, "name" := Name, "description" := Description,
 is_usage_spec(_U) ->
 	false.
 
-is_usage_log([TS, N, #{"usageCharacteristic" := UsageChars,
-		"ratedProductUsage" := Rated}]) when is_list(UsageChars),
-		is_list(Rated), is_integer(TS), is_integer(N) ->
+is_usage(#{"usageCharacteristic" := UsageChars,
+		"ratedProductUsage" := Rated}) when is_list(UsageChars),
+		is_list(Rated) ->
 	true;
-is_usage_log(_) ->
+is_usage(_) ->
 	false.
