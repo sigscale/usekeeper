@@ -96,6 +96,7 @@ class userAdd extends PolymerElement {
 	}
 
 	_cancel() {
+		this.$.userAddModal.close();
 		this.userUsername = null;
 		this.userPassword = null;
 		this.userFirstName = null;
