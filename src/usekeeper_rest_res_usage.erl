@@ -59,7 +59,6 @@ post_usage(RequestBody) ->
 		{ok, Usage} = zj:decode(RequestBody),
 		case usekeeper:add_usage(usage(Usage)) of
 			{ok, {_TS, _N, U}} ->
-%				UsageLog = {TS, N, usage(U)},
 				Body = zj:encode(usage(U)),
 				Headers = [{content_type, "application/json"}],
 				{ok, Headers, Body};
@@ -213,7 +212,6 @@ query_page(PageServer, Etag, _Query, _Filters, Start, End) ->
 		{error, Status} ->
 			{error, Status};
 		{Events, ContentRange} ->
-%			Body = [{TS, N, zj:encode(usage(Usage))} || {TS, N, Usage} <- Events],
 			Usages = [usage(Usage) || {_TS, _N, Usage} <- Events],
 			Body = zj:encode(Usages),
 			Headers = [{content_type, "application/json"},
