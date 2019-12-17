@@ -162,15 +162,6 @@ usage(["usageCharacteristic" | T],
 		#{"usageCharacteristic" := UsageChar} = U) when is_list(UsageChar) ->
 	CharList = [{Name, CharMap} || #{"name" := Name} = CharMap <- UsageChar],
 	usage(T, U#{"usageCharacteristic" => maps:from_list(CharList)});
-usage(["ratedProductUsage" | T],
-		#{"ratedProductUsage" := Rated} = U) when is_map(Rated) ->
-	I = maps:iterator(Rated),
-	RatedList = map_to_list(maps:next(I), []),
-	usage(T, U#{"ratedProductUsage" => RatedList});
-usage(["ratedProductUsage" | T],
-		#{"ratedProductUsage" := Rated} = U) when is_list(Rated) ->
-	RatedList = [{Tag, RatedMap} || #{"usageRatingTag" := Tag} = RatedMap <- Rated],
-	usage(T, U#{"ratedProductUsage" => maps:from_list(RatedList)});
 usage(["relatedParty" | T],
 		#{"relatedParty" := Related} = U) when is_map(Related) ->
 	I = maps:iterator(Related),
