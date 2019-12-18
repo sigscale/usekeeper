@@ -9,6 +9,8 @@
  */
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import {} from '@polymer/polymer/lib/elements/dom-if.js';
+import {} from '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
 import '@vaadin/vaadin-grid/vaadin-grid-column-group.js';
@@ -22,6 +24,71 @@ class usageList extends PolymerElement {
 			<vaadin-grid id="usageGrid"
 					loading="{{loading}}"
 					active-item="{{activeItem}}">
+				<template class="row-details">
+					<dl class="details">
+						<template is="dom-if" if="{{item.date}}">
+							<dt><b>Date</b></dt>
+							<dd>{{item.date}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.description}}">
+							<dt><b>Description</b></dt>
+							<dd>{{item.description}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.state}}">
+							<dt><b>State</b></dt>
+							<dd>{{item.state}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.type}}">
+							<dt><b>Type</b></dt>
+							<dd>{{item.type}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.currencyCode}}">
+							<dt><b>Currency</b></dt>
+							<dd>{{item.currencyCode}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.isTaxExempt}}">
+							<dt><b>Tax Exempt</b></dt>
+							<dd>{{item.isTaxExempt}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.ratingAmountType}}">
+							<dt><b>Rating Amount Type</b></dt>
+							<dd>{{item.ratingAmountType}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.taxExcludedRatingAmount}}">
+							<dt><b>Tax Exclude Amount</b></dt>
+							<dd>{{item.taxExcludedRatingAmount}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.taxIncludedRatingAmount}}">
+							<dt><b>Tax Include Amount</b></dt>
+							<dd>{{item.taxIncludedRatingAmount}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.taxRate}}">
+							<dt><b>Tax Rate</b></dt>
+							<dd>{{item.taxRate}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.usageRatingTag}}">
+							<dt><b>Rating Tag</b></dt>
+							<dd>{{item.usageRatingTag}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.id}}">
+							<dt><b>Id</b></dt>
+							<dd>{{item.id}}</dd>
+						</template>
+						<template is="dom-if" if="{{item.role}}">
+							<dt><b>Role</b></dt>
+							<dd>{{item.role}}</dd>
+						</template>
+					</dl>
+					<h3 class="alarmH3">Usage Characteristics:</h3>
+					<dl class="details">
+						<template is="dom-if" if="{{item.usageChar}}">
+							<template is="dom-repeat" items="{{item.usageChar}}" as="detail">
+							   <dt>{{detail.name}}</dt>
+							   <dd>{{detail.value}}</dd>
+							</template>
+						</template>
+					</dl>
+				</template>
 				<vaadin-grid-column>
 					<template class="header">
 						Date 
@@ -102,11 +169,23 @@ class usageList extends PolymerElement {
 		grid.dataProvider = this._getUsage;
 	}
 
-	_activeItemChanged(item) {
-		if(item) {
-			this.$.usageGrid.selectedItems = item ? [item] : [];
-		} else {
-			this.$.usageGrid.selectedItems = [];
+	_activeItemChanged(item, last) {
+		if(item || last) {
+			var grid = this.shadowRoot.getElementById('usageGrid');
+			var current;
+			if(item == null) {
+				current = last;
+			} else {
+				current = item
+			}
+			function checkExist(use) {
+				return use.id == current.id;
+			}
+			if(grid.detailsOpenedItems && grid.detailsOpenedItems.some(checkExist)) {
+				grid.closeItemDetails(current);
+			} else {
+				grid.openItemDetails(current);
+			}
 		}
 	}
 
@@ -152,8 +231,25 @@ class usageList extends PolymerElement {
 					if(request.response[index].date) {
 						newRecord.date = request.response[index].date;
 					}
+					for(var index3 in request.response[index].usageCharacteristic) {
+						var useChar = request.response[index].usageCharacteristic[index3];
+						newRecord.usageChar = new Array();
+						var usageObject = useChar;
+						for(var Name in usageObject) {
+							newRecord.usageChar.push({name: Name, value: usageObject[Name]});
+						}
+					}
 					for(var index1 in request.response[index].ratedProductUsage) {
 						var rate = request.response[index].ratedProductUsage[index1];
+						if(rate.isTaxExempt) {
+							newRecord.isTaxExempt = rate.isTaxExempt;
+						}
+						if(rate.ratingAmountType) {
+							newRecord.ratingAmountType = rate.ratingAmountType;
+						}
+						if(rate.currencyCode) {
+							newRecord.currencyCode = rate.currencyCode;
+						}
 						if(rate.taxExcludedRatingAmount) {
 							newRecord.taxExcludedRatingAmount = rate.taxExcludedRatingAmount;
 						}
@@ -162,6 +258,18 @@ class usageList extends PolymerElement {
 						}
 						if(rate.taxRate) {
 							newRecord.taxRate = rate.taxRate;
+						}
+						if(rate.usageRatingTag) {
+							newRecord.usageRatingTag = rate.usageRatingTag;
+						}
+					}
+					for(var index2 in request.response[index].relatedParty) {
+						var party = request.response[index].relatedParty[index2];
+						if(party.id) {
+							newRecord.id = party.id;
+						}
+						if(party.role) {
+							newRecord.role = party.role;
 						}
 					}
 					vaadinItems[index] = newRecord;
