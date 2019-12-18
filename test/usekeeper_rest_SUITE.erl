@@ -160,17 +160,19 @@ post_usage_specification(Config) ->
 			++ "\t\t\"startDateTime\": \"2019-01-29T00:00\",\n"
 			++ "\t\t\"endDateTime\": \"2019-12-31T23:59\"\n"
 			++ "\t},\n"
-			++ "\t\"usageSpecCharacteristic\": {\n"
-			++ "\t\t\"name\": \"" ++ Name ++ "\",\n"
-			++ "\t\t\"description\": \"" ++ Description ++ "\",\n"
-			++ "\t\t\"configurable\": true,\n"
-			++ "\t\t\"usageSpecCharacteristicValue\": [\n"
-			++ "\t\t\t{\n"
-			++ "\t\t\t\t\"valueType\": \"number\",\n"
-			++ "\t\t\t\t\"default\": false\n"
-			++ "\t\t\t}\n"
-			++ "\t\t]\n"
-			++ "\t}\n"
+			++ "\t\"usageSpecCharacteristic\":[\n"
+			++ "\t\t\{\n"
+			++ "\t\t\t\"name\": \"" ++ Name ++ "\",\n"
+			++ "\t\t\t\"description\": \"" ++ Description ++ "\",\n"
+			++ "\t\t\t\"configurable\": true,\n"
+			++ "\t\t\t\"usageSpecCharacteristicValue\": [\n"
+			++ "\t\t\t\t{\n"
+			++ "\t\t\t\t\t\"valueType\": \"number\",\n"
+			++ "\t\t\t\t\t\"default\": false\n"
+			++ "\t\t\t\t}\n"
+			++ "\t\t\t]\n"
+			++ "\t\t}\n"
+			++ "\t]\n"
 			++ "}\n",
 	ContentType = "application/json",
 	Accept = {"accept", "application/json"},
@@ -184,7 +186,7 @@ post_usage_specification(Config) ->
 	F = fun() ->
 			mnesia:read(use_spec, ID, read)
 	end,
-	UsageSpec = case mnesia:transaction(F) of
+	{ok, UsageSpec} = case mnesia:transaction(F) of
 		{aborted, Reason} ->
 			{error, Reason};
 		{atomic, []} ->
@@ -192,10 +194,11 @@ post_usage_specification(Config) ->
 		{atomic, [Spec]} ->
 			{ok, Spec}
 	end,
-	{ok, #use_spec{id = ID, name = Name, description = Description,
-			class_type = ClassType, base_type = BaseType, characteristic = Char}} = UsageSpec,
-	#{"name" := Name, "description" := Description,
-			"configurable" := true, "usageSpecCharacteristicValue" := [CV]} = Char,
+	#use_spec{id = ID, name = Name, description = Description,
+			class_type = ClassType, base_type = BaseType, characteristic = Char} = UsageSpec,
+	#{Name := #{"name" := Name, "description" := Description,
+			"configurable" := true,
+			"usageSpecCharacteristicValue" := [CV]}} = Char,
 	#{"valueType" => "number", "default" => false} == CV.
 
 get_usage_specifications() ->
@@ -408,7 +411,7 @@ is_usage_spec(#{"id" := Id, "name" := Name, "description" := Description,
 		"validFor" := #{"startDateTime" := StartTime, "endDateTime" := EndTime},
 		"usageSpecCharacteristic" := UsageSpecChars})
 		when is_list(Id), is_list(Name), is_list(Description),
-		is_list(StartTime), is_list(EndTime), is_map(UsageSpecChars) ->
+		is_list(StartTime), is_list(EndTime), is_list(UsageSpecChars) ->
 	true;
 is_usage_spec(_U) ->
 	false.
