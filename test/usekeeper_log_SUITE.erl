@@ -26,7 +26,7 @@
 -export([init_per_testcase/2, end_per_testcase/2]).
 
 %% common_test test cases
--export([]).
+-export([get_last/0, get_last/1]).
 
 -include("usage.hrl").
 -include_lib("common_test/include/ct.hrl").
@@ -78,12 +78,62 @@ sequences() ->
 %% Returns a list of all test cases in this test suite.
 %%
 all() ->
-	[].
+	[get_last].
 
 %%---------------------------------------------------------------------
 %%  Test cases
 %%---------------------------------------------------------------------
 
+get_last() ->
+	[{userdata, [{doc, "Get last events from log"}]}].
+
+get_last(_Config) ->
+	FileSize = 1048576,
+	NumFiles = 10,
+	Term = {0, lists:duplicate(250, 0)},
+	AverageSize = erlang:external_size({0, Term}),
+	NumChunkItems = 65536 div AverageSize,
+	{ok, Log} = disk_log:open([{name, make_ref()}, {file, "last"},
+			{type, wrap}, {size, {FileSize, NumFiles}}]),
+	Fill = fun(F, FileNum, ItemNum, 0) ->
+				Info = disk_log:info(Log),
+				case lists:keyfind(current_file, 1, Info) of
+					{current_file, FileNum} ->
+						ItemNum;
+					{current_file, _} ->
+						F(F, FileNum, ItemNum, NumChunkItems)
+				end;
+			(F, FileNum, ItemNum, N) ->
+				NewItemNum = ItemNum + 1,
+				R = rand:uniform(500),
+				Item = {NewItemNum, lists:duplicate(R, 0)},
+				disk_log:log(Log, Item),
+				F(F, FileNum, NewItemNum, N - 1)
+	end,
+	% check with half full wrap log
+	NumTotal1 = Fill(Fill, NumFiles div 2, 0, NumChunkItems),
+	MaxSize = (NumChunkItems * 3) + 25,
+	{MaxSize, Items1} = usekeeper_log:last(Log, MaxSize),
+	Fcheck = fun({N, _}, N) ->
+				N - 1
+	end,
+	StartItem1 = NumTotal1 - MaxSize,
+	StartItem1 = lists:foldl(Fcheck, NumTotal1, Items1),
+	% check while logging into last wrap file
+	NumTotal2 = Fill(Fill, NumFiles, NumTotal1, NumChunkItems),
+	{MaxSize, Items2} = usekeeper_log:last(Log, MaxSize),
+	StartItem2 = NumTotal2 - MaxSize,
+	StartItem2 = lists:foldl(Fcheck, NumTotal2, Items2),
+	% check while logging into first file, after turnover
+	NumTotal3 = Fill(Fill, 1, NumTotal2, NumChunkItems),
+	{MaxSize, Items3} = usekeeper_log:last(Log, MaxSize),
+	StartItem3 = NumTotal3 - MaxSize,
+	StartItem3 = lists:foldl(Fcheck, NumTotal3, Items3),
+	% check while logging into second file, after turnover
+	NumTotal4 = Fill(Fill, 2, NumTotal3, NumChunkItems),
+	{MaxSize, Items4} = usekeeper_log:last(Log, MaxSize),
+	StartItem4 = NumTotal4 - MaxSize,
+	StartItem4 = lists:foldl(Fcheck, NumTotal4, Items4).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
