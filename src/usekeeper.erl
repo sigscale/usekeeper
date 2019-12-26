@@ -364,17 +364,38 @@ query_usage2(eof, _Sort, _MatchSpec, _CountOnly, Total) ->
 query_usage2({error, Reason}, _Sort, _MatchSpec, _CountOnly, _Total) ->
 	{error, Reason};
 query_usage2({Cont, Chunk, 0}, Sort, '_', false, Total) when is_list(Chunk) ->
-	query_usage3(Cont, Chunk, Total, lists:reverse(Sort));
+	query_usage4(Cont, Chunk, Total, lists:reverse(Sort));
+query_usage2({Cont, Chunk, 0}, Sort, MatchSpec, CountOnly, _Total)
+		when is_list(Chunk) ->
+	query_usage3(Cont, Chunk, Sort, MatchSpec, CountOnly, []);
 query_usage2({Cont, Chunk}, Sort, '_', false, Total) when is_list(Chunk) ->
-	query_usage3(Cont, Chunk, Total, lists:reverse(Sort)).
+	query_usage4(Cont, Chunk, Total, lists:reverse(Sort));
+query_usage2({Cont, Chunk}, Sort, MatchSpec, CountOnly, _Total)
+		when is_list(Chunk) ->
+	query_usage3(Cont, Chunk, Sort, MatchSpec, CountOnly, []).
 %% @hidden
-query_usage3(Cont, Objects, Total, [H | T]) when H > 0 ->
-	query_usage3(Cont, lists:keysort(H, Objects), Total, T);
-query_usage3(Cont, Objects, Total, [H | T]) when H < 0 ->
-	query_usage3(Cont, lists:reverse(lists:keysort(-H, Objects)), Total, T);
-query_usage3(Cont, Objects, undefined, []) ->
+query_usage3(Cont, [H | T], Sort, MatchSpec, CountOnly, Acc)
+		when is_list(MatchSpec) ->
+	case erlang:match_spec_test(element(3, H), MatchSpec, table) of
+		{ok, #{}, [], []} ->
+			query_usage3(Cont, T, Sort, MatchSpec, CountOnly, [H | Acc]);
+		{ok, false , [], []}->
+			query_usage3(Cont, T, Sort, MatchSpec, CountOnly, Acc);
+		{error, Reason} ->
+			{error, Reason}
+	end;
+query_usage3(Cont, [], Sort, _MatchSpec, false, Acc) ->
+	query_usage4(Cont, Acc, length(Acc), lists:reverse(Sort));
+query_usage3(Cont, [], _Sort, _MatchSpec, true, Acc) ->
+	{Cont, [], length(Acc)}.
+%% @hidden
+query_usage4(Cont, Objects, Total, [H | T]) when H > 0 ->
+	query_usage4(Cont, lists:keysort(H, Objects), Total, T);
+query_usage4(Cont, Objects, Total, [H | T]) when H < 0 ->
+	query_usage4(Cont, lists:reverse(lists:keysort(-H, Objects)), Total, T);
+query_usage4(Cont, Objects, undefined, []) ->
 	{Cont, Objects};
-query_usage3(Cont, Objects, Total, []) ->
+query_usage4(Cont, Objects, Total, []) ->
 	{Cont, Objects, Total}.
 
 %%----------------------------------------------------------------------
