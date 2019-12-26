@@ -354,8 +354,9 @@ query_usage1(_Cont, Size, _Sort, '_', true) ->
 query_usage1(Cont, Size, Sort, '_', false) ->
 	{no_items, N} = lists:keyfind(no_items, 1, disk_log:info(usage)),
 	query_usage2(disk_log:chunk(usage, Cont, Size), Sort, '_', false, N);
-query_usage1(Cont, Size, Sort, MatchSpec, false) ->
-	query_usage2(disk_log:chunk(usage, Cont, Size), Sort, MatchSpec, false, undefined).
+query_usage1(Cont, Size, Sort, MatchSpec, CountOnly) ->
+	query_usage2(disk_log:chunk(usage, Cont, Size),
+			Sort, MatchSpec, CountOnly, undefined).
 %% @hidden
 query_usage2(eof, _Sort, _MatchSpec, _CountOnly, undefined) ->
 	{eof, []};
