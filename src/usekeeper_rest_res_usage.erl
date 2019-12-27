@@ -261,5 +261,20 @@ parse_filter([{exact, "status", Status} | T], all, MatchHead, MatchConditions)
 parse_filter([{exact, "type", Type} | T], all, MatchHead, MatchConditions)
 		when is_list(Type) ->
 	parse_filter(T, all, MatchHead#{"type" => Type}, MatchConditions);
+parse_filter([{exact, "usageSpecification" ++ "." ++ "id", Id} | T],
+		all, MatchHead, MatchConditions) when is_list(Id) ->
+	parse_filter(T, all, MatchHead#{"usageSpecification" => #{"id" => Id}}, MatchConditions);
+parse_filter([{exact, "ratedProductUsage" ++ "." ++ "taxIncludedRatingAmount", TaxIncluded} | T],
+		all, MatchHead, MatchConditions) when is_list(TaxIncluded) ->
+	parse_filter(T, all, MatchHead#{"ratedProductUsage" =>
+			[#{"taxIncludedRatingAmount" => list_to_integer(TaxIncluded)}]}, MatchConditions);
+parse_filter([{exact, "ratedProductUsage" ++ "." ++ "taxExcludedRatingAmount", TaxExcluded} | T],
+		all, MatchHead, MatchConditions) when is_list(TaxExcluded) ->
+	parse_filter(T, all, MatchHead#{"ratedProductUsage" =>
+			[#{"taxExcludedRatingAmount" => list_to_integer(TaxExcluded)}]}, MatchConditions);
+parse_filter([{exact, "ratedProductUsage" ++ "." ++ "taxRate", TaxRate} | T],
+		all, MatchHead, MatchConditions) when is_list(TaxRate) ->
+	parse_filter(T, all, MatchHead#{"ratedProductUsage" =>
+			[#{"taxRate" => list_to_integer(TaxRate)}]}, MatchConditions);
 parse_filter([], all, MatchHead, MatchConditions) ->
 	[{MatchHead, MatchConditions, ['$_']}].
