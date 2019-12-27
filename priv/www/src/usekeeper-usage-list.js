@@ -14,6 +14,7 @@ import {} from '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-grid/vaadin-grid.js';
 import '@vaadin/vaadin-grid/vaadin-grid-column-group.js';
+import '@vaadin/vaadin-grid/vaadin-grid-filter.js';
 import './style-element.js';
 
 class usageList extends PolymerElement {
@@ -91,15 +92,39 @@ class usageList extends PolymerElement {
 				</template>
 				<vaadin-grid-column>
 					<template class="header">
-						Date 
+						<vaadin-grid-filter
+							id="filterDate"
+							aria-label="Date"
+							path="date"
+							value="{{_filterDate}}">
+							<input
+								slot="filter"
+								placeholder="Date"
+								value="{{_filterDate::input}}"
+								focus-target>
+						</vaadin-grid-filter>
 					</template>
-					<template>[[item.date]]</template>
+					<template>
+						<bdo>[[item.date]]</bdo>
+					</template>
 				</vaadin-grid-column>
 				<vaadin-grid-column>
 					<template class="header">
-						Description 
+						<vaadin-grid-filter
+							id="filterdes"
+							aria-label="Description"
+							path="description"
+							value="{{_filterDes}}">
+							<input
+								slot="filter"
+								placeholder="Description"
+								value="{{_filterDes::input}}"
+								focus-target>
+						</vaadin-grid-filter>
 					</template>
-					<template>[[item.description]]</template>
+					<template>
+						<bdo>[[item.description]]</bdo>
+					</template>
 				</vaadin-grid-column>
 				<vaadin-grid-column-group>
 					<template class="header">
@@ -107,34 +132,94 @@ class usageList extends PolymerElement {
 					</template>
 					<vaadin-grid-column>
 						<template class="header">
-							Excluded
+							<vaadin-grid-filter
+								id="filterExAmount"
+								aria-label="Excluded"
+								path="taxExcludedRatingAmount"
+								value="{{_filterExAmount}}">
+								<input
+									slot="filter"
+									placeholder="Excluded"
+									value="{{_filterExAmount::input}}"
+									focus-target>
+							</vaadin-grid-filter>
 						</template>
-						<template>[[item.taxExcludedRatingAmount]]</template>
+						<template>
+							<bdo>[[item.taxExcludedRatingAmount]]</bdo>
+						</template>
 					</vaadin-grid-column>
 					<vaadin-grid-column>
 						<template class="header">
-							Rate
+							<vaadin-grid-filter
+								id="filterRate"
+								aria-label="Rate"
+								path="taxRate"
+								value="{{_filterRate}}">
+								<input
+									slot="filter"
+									placeholder="Rate"
+									value="{{_filterRate::input}}"
+									focus-target>
+							</vaadin-grid-filter>
 						</template>
-						<template>[[item.taxRate]]</template>
+						<template>
+							<bdo>[[item.taxRate]]</bdo>
+						</template>
 					</vaadin-grid-column>
 					<vaadin-grid-column>
 						<template class="header">
-							Included
+							<vaadin-grid-filter
+								id="filterInAmount"
+								aria-label="Included"
+								path="taxIncludedRatingAmount"
+								value="{{_filterInAmount}}">
+								<input
+									slot="filter"
+									placeholder="Included"
+									value="{{_filterInAmount::input}}"
+									focus-target>
+							</vaadin-grid-filter>
 						</template>
-						<template>[[item.taxIncludedRatingAmount]]</template>
+						<template>
+							<bdo>[[item.taxIncludedRatingAmount]]</bdo>
+						</template>
 					</vaadin-grid-column>
 				</vaadin-grid-column-group>
 				<vaadin-grid-column>
 					<template class="header">
-						Status
+						<vaadin-grid-filter
+							id="filterStatus"
+							aria-label="Status"
+							path="status"
+							value="{{_filterStatus}}">
+							<input
+								slot="filter"
+								placeholder="Status"
+								value="{{_filterStatus::input}}"
+								focus-target>
+						</vaadin-grid-filter>
 					</template>
-					<template>[[item.status]]</template>
+					<template>
+						<bdo>[[item.status]]</bdo>
+					</template>
 				</vaadin-grid-column>
 				<vaadin-grid-column>
 					<template class="header">
-						Type
+						<vaadin-grid-filter
+							id="filterType"
+							aria-label="Type"
+							path="type"
+							value="{{_filterType}}">
+							<input
+								slot="filter"
+								placeholder="Type"
+								value="{{_filterType::input}}"
+								focus-target>
+						</vaadin-grid-filter>
 					</template>
-					<template>[[item.type]]</template>
+					<template>
+						<bdo>[[item.type]]</bdo>
+					</template>
 				</vaadin-grid-column>
 			</vaadin-grid>
 			<iron-ajax
@@ -159,6 +244,34 @@ class usageList extends PolymerElement {
 			etag: {
 				type: String,
 				value: null
+			},
+			_filterDate: {
+				type: Boolean,
+				observer: '_filterChanged'
+			},
+			_filterDes: {
+				type: Boolean,
+				observer: '_filterChanged'
+			},
+			_filterExAmount: {
+				type: Boolean,
+				observer: '_filterChanged'
+			},
+			_filterRate: {
+				type: Boolean,
+				observer: '_filterChanged'
+			},
+			_filterInAmount: {
+				type: Boolean,
+				observer: '_filterChanged'
+			},
+			_filterStatus: {
+				type: Boolean,
+				observer: '_filterChanged'
+			},
+			_filterType: {
+				type: Boolean,
+				observer: '_filterChanged'
 			}
 		}
 	}
@@ -191,11 +304,18 @@ class usageList extends PolymerElement {
 
 	_getUsage(params, callback) {
 		var grid = this;
+		var usage = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
+		var ajax = usage.shadowRoot.getElementById('getUsageAjax');
+		params.filters.forEach(function(filter, index) {
+			if(index == 0) {
+				ajax.url += '?'+ filter.path + '=' + filter.value;
+			} else {
+				ajax.url += '&'+ filter.path + '=' + filter.value;
+			}
+		});
 		if(!grid.size) {
 			grid.size = 0;
 		}
-		var usage = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
-		var ajax = usage.shadowRoot.getElementById('getUsageAjax');
 		if(ajax.etag && params.page > 0) {
 			headers['If-Range'] = ajax.etag;
 		}
@@ -309,6 +429,12 @@ class usageList extends PolymerElement {
 			}
 			ajax.generateRequest().completes.then(handleAjaxResponse, handleAjaxError);
 		}
+	}
+
+	_filterChanged(filter) {
+		this.etag = null;
+		var grid = this.shadowRoot.getElementById('usageGrid');
+		grid.size = 0;
 	}
 }
 
