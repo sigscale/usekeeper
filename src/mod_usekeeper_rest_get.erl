@@ -93,7 +93,7 @@ parse_query(Resource, ModData, {Path, []}) ->
 	do_get(Resource, ModData, string:tokens(Path, "/"), []);
 parse_query(Resource, ModData, {Path, "?" ++ Query}) ->
 	do_get(Resource, ModData, string:tokens(Path, "/"),
-		fm_rest:parse_query(Query));
+		usekeeper_rest:parse_query(Query));
 parse_query(_R, #mod{data = Data}, _Q) ->
 	Response = "<h2>HTTP Error 404 - Not Found</h2>",
 	{proceed, [{response, {404, Response}} | Data]}.
@@ -109,7 +109,7 @@ do_get(Resource, #mod{parsed_header = Headers, method = Method} = ModData,
 	do_response(ModData,
 			Resource:get_usage_specifications(Method, Query, Headers));
 do_get(Resource, #mod{parsed_header = Headers, method = Method} = ModData,
-		["usageManagement", "v4", "usage"], Query) ->
+		["usageManagement", "v4", "usage" | _], Query) ->
 	do_response(ModData,
 			Resource:get_usage(Method, Query, Headers));
 do_get(_, #mod{data = Data}, _, _) ->

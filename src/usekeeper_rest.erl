@@ -21,7 +21,8 @@
 -module(usekeeper_rest).
 -copyright('Copyright (c) 2018-2019 SigScale Global Inc.').
 
--export([date/1, etag/1, iso8601/1, range/1, patch/2, pointer/1]).
+-export([date/1, etag/1, iso8601/1]).
+-export([parse_query/1, range/1, pointer/1, patch/2]).
 
 -include("usage.hrl").
 
@@ -195,6 +196,31 @@ patch([#{"op" := "remove", "path" := Pointer} | T], Resource) ->
 	patch(T, maps:remove(Path, Resource));
 patch([], Resource) ->
 	Resource.
+
+-spec parse_query(Query) -> Result
+	when
+		Query :: string(),
+		Result :: [{Key, Value}],
+		Key :: string(),
+		Value :: string().
+%% @doc Parse the query portion of a URI.
+%% @throws {error, 400}
+parse_query("?" ++ Query) ->
+	parse_query(Query);
+parse_query(Query) when is_list(Query) ->
+	parse_query(string:tokens(Query, "&"), []).
+%% @hidden
+parse_query([H | T], Acc) ->
+	parse_query(T, parse_query1(H, string:chr(H, $=), Acc));
+parse_query([], Acc) ->
+	lists:reverse(Acc).
+%% @hidden
+parse_query1(_Field, 0, _Acc) ->
+	throw({error, 400});
+parse_query1(Field, N, Acc) ->
+	Key = lists:sublist(Field, N - 1),
+	Value = lists:sublist(Field, N + 1, length(Field)),
+	[{Key, Value} | Acc].
 
 %%----------------------------------------------------------------------
 %%  internal functions

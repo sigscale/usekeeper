@@ -186,6 +186,12 @@ map_to_list(none, Acc) ->
 	Acc.
 
 %% @hidden
+match([{Key, Value} | T], Acc) ->
+	match(T, [{exact, Key, Value} | Acc]);
+match([], Acc) ->
+	Acc.
+
+%% @hidden
 query_start(Method, Query, Filters, RangeStart, RangeEnd) ->
 	try
 		CountOnly = case Method of
@@ -194,7 +200,15 @@ query_start(Method, Query, Filters, RangeStart, RangeEnd) ->
 			"HEAD" ->
 				true
 		end,
-		MFA = [usekeeper, query_usage, ['_'] ++ [CountOnly]],
+		QueryArgs = case length(Query) of
+			N when N > 0 ->
+				Rest = match(Query, []),
+				Rest1 = [{array,[{complex, Rest}]}],
+				parse_filter(Rest1);
+			_ ->
+				'_'
+		end,
+		MFA = [usekeeper, query_usage, [QueryArgs, CountOnly]],
 		case supervisor:start_child(usekeeper_rest_pagination_sup, [MFA]) of
 			{ok, PageServer, Etag} ->
 				query_page(PageServer, Etag, Query, Filters, RangeStart, RangeEnd);
@@ -219,3 +233,33 @@ query_page(PageServer, Etag, _Query, _Filters, Start, End) ->
 				{content_range, ContentRange}],
 			{ok, Headers, Body}
 	end.
+
+-spec parse_filter(Query) -> Result
+	when
+		Query :: [term()],
+		Result :: [{map(), [term()], [term()]}].
+%% @doc Create `[MatchHead, MatchConditions]' from `Query'.
+%% 	MatchHead = ets:match_pattern()
+%%		MatchConditions = [tuple()]
+%% @private
+parse_filter(Query) ->
+	parse_filter(Query, #{}, []).
+%% @hidden
+parse_filter([{array, [{complex, Filter}]}], MatchHead, MatchConditions) ->
+	parse_filter(Filter, all, MatchHead, MatchConditions).
+
+%% @hidden
+parse_filter([{exact, "description", Description} | T], all, MatchHead, MatchConditions)
+		when is_list(Description) ->
+	parse_filter(T, all, MatchHead#{"description" => Description}, MatchConditions);
+parse_filter([{exact, "date", Date} | T], all, MatchHead, MatchConditions)
+		when is_list(Date) ->
+	parse_filter(T, all, MatchHead#{"date" => Date}, MatchConditions);
+parse_filter([{exact, "status", Status} | T], all, MatchHead, MatchConditions)
+		when is_list(Status) ->
+	parse_filter(T, all, MatchHead#{"status" => Status}, MatchConditions);
+parse_filter([{exact, "type", Type} | T], all, MatchHead, MatchConditions)
+		when is_list(Type) ->
+	parse_filter(T, all, MatchHead#{"type" => Type}, MatchConditions);
+parse_filter([], all, MatchHead, MatchConditions) ->
+	[{MatchHead, MatchConditions, ['$_']}].
