@@ -119,7 +119,7 @@ sequences() ->
 %%
 all() ->
 	[post_usage_specification, get_usage_specifications, delete_usage_specification,
-	patch_usage_specification, post_usage, get_users, get_usage].
+	patch_usage_specification, post_usage, get_users, get_usage, query_usage].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -381,6 +381,48 @@ get_usage(Config) ->
 	{ok, Usages} = zj:decode(ResponseBody),
 	true = length(Usages) >= 5,
 	true = lists:all(fun is_usage/1, Usages).
+
+query_usage() ->
+	[{userdata, [{doc, "Query usage entry in usage log"}]}].
+
+query_usage(Config) ->
+	F = fun F(0, Acc) ->
+					Acc;
+			F(N, Acc) ->
+				Date = usekeeper_rest:iso8601(erlang:system_time(millisecond)),
+				SpecId = integer_to_list(erlang:unique_integer([positive])),
+				TaxExcluded = rand:uniform(20),
+				TaxRate = rand:uniform(20),
+				TaxIncluded = TaxExcluded + ((TaxExcluded * TaxRate) div 100),
+				Rated = #{"taxIncludedRatingAmount" => TaxIncluded,
+						"taxExcludedRatingAmount" => TaxExcluded,
+						"usageRatingTag" => "Usage", "ratingAmountType" => "Total",
+						"taxRate" => TaxRate, "currencyCode" => "EUR",
+						"isBilled" => "false", "offerTariffType" => "Normal"},
+				Usage = #{"description" => "Voice call usage",
+						"date" => Date, "status" => "received",
+						"type" => "CloudCpuUsage",
+						"usageSpecification" => #{"id" => SpecId,
+								"name" => "Cloud CPU usage specification"},
+						"ratedProductUsage" => [Rated]},
+				{ok, {_TS, _N, U}} = usekeeper:add_usage(Usage),
+				F(N - 1, [U | Acc])
+	end,
+	Usages = F(rand:uniform(100), []),
+	#{"usageSpecification" := #{"id" := Id},
+			"ratedProductUsage" := [#{"taxRate" := Rate}]}
+			= lists:nth(rand:uniform(length(Usages)), Usages),
+	HostUrl = ?config(host_url, Config),
+	PathUsage = ?PathUsage ++ "usage?",
+	Accept = {"accept", "application/json"},
+	Query = "usageSpecification.id=" ++ Id ++ "&ratedProductUsage.taxRate=" ++ integer_to_list(Rate),
+	Request = {HostUrl ++ PathUsage ++ Query, [Accept, auth_header()]},
+	{ok, Result} = httpc:request(get, Request, [], []),
+	{{"HTTP/1.1", 200, _OK}, Headers, ResponseBody} = Result,
+	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
+	{ok, UsageList} = zj:decode(ResponseBody),
+	[#{"usageSpecification" := #{"id" := Id},
+			"ratedProductUsage" := [#{"taxRate" := Rate}]}] = UsageList.
 
 %%---------------------------------------------------------------------
 %%  Internal functions
