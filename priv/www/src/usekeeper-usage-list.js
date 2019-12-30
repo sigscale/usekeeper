@@ -307,10 +307,17 @@ class usageList extends PolymerElement {
 		var usage = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
 		var ajax = usage.shadowRoot.getElementById('getUsageAjax');
 		params.filters.forEach(function(filter, index) {
-			if(index == 0) {
-				ajax.url += '?'+ filter.path + '=' + filter.value;
+			if(filter.path == "taxIncludedRatingAmount"
+					|| filter.path == "taxExcludedRatingAmount"
+					|| filter.path == "taxRate") {
+				ajax.url += '?'+ "ratedProductUsage." + filter.path + '=' + filter.value;
+				delete params.filters;
 			} else {
-				ajax.url += '&'+ filter.path + '=' + filter.value;
+				if(index == 0) {
+					ajax.url += '?'+ filter.path + '=' + filter.value;
+				} else {
+					ajax.url += '&'+ filter.path + '=' + filter.value;
+				}
 			}
 		});
 		if(!grid.size) {
@@ -359,14 +366,8 @@ class usageList extends PolymerElement {
 							newRecord.usageChar.push({name: Name, value: usageObject[Name]});
 						}
 					}
-					for(var index1 in request.response[index].ratedProductUsage) {
-						var rate = request.response[index].ratedProductUsage[index1];
-						if(rate.isTaxExempt) {
-							newRecord.isTaxExempt = rate.isTaxExempt;
-						}
-						if(rate.ratingAmountType) {
-							newRecord.ratingAmountType = rate.ratingAmountType;
-						}
+					for(var index4 in request.response[index].ratedProductUsage) {
+						var rate = request.response[index].ratedProductUsage[index4];
 						if(rate.currencyCode) {
 							newRecord.currencyCode = rate.currencyCode;
 						}
