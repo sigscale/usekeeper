@@ -306,15 +306,21 @@ class usageList extends PolymerElement {
 		var grid = this;
 		var usage = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
 		var ajax = usage.shadowRoot.getElementById('getUsageAjax');
+		var test = ajax.url;
+		var ajax1 = test.split('?')[0];
+		ajax.url = ajax1;
 		params.filters.forEach(function(filter, index) {
 			if(filter.path == "taxIncludedRatingAmount"
 					|| filter.path == "taxExcludedRatingAmount"
 					|| filter.path == "taxRate") {
 				ajax.url += '?'+ "ratedProductUsage." + filter.path + '=' + filter.value;
-				delete params.filters;
 			} else {
 				if(index == 0) {
-					ajax.url += '?'+ filter.path + '=' + filter.value;
+					if(filter.value) {
+						ajax.url += '?'+ filter.path + '=' + filter.value;
+					} else {
+						ajax.url;
+					}
 				} else {
 					ajax.url += '&'+ filter.path + '=' + filter.value;
 				}
@@ -323,8 +329,8 @@ class usageList extends PolymerElement {
 		if(!grid.size) {
 			grid.size = 0;
 		}
-		if(ajax.etag && params.page > 0) {
-			headers['If-Range'] = ajax.etag;
+		if(usage.etag && params.page > 0) {
+			headers['If-Range'] = usage.etag;
 		}
 		var handleAjaxResponse = function(request) {
 			if(request) {
