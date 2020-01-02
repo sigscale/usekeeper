@@ -309,7 +309,13 @@ class usageList extends PolymerElement {
 		ajax.params = {};
 		params.filters.forEach(function(filter) {
 			if(filter.value) {
-				ajax.params[filter.path] = filter.value;
+				if(filter.path == "taxIncludedRatingAmount"
+					|| filter.path == "taxExcludedRatingAmount"
+					|| filter.path == "taxRate") {
+					ajax.params["ratedProductUsage." + filter.path] = filter.value;
+				} else {
+					ajax.params[filter.path] = filter.value;
+				}
 			}
 		});
 		if(!grid.size) {
