@@ -224,6 +224,7 @@ class usageList extends PolymerElement {
 			</vaadin-grid>
 			<iron-ajax
 				id="getUsageAjax"
+				url="usageManagement/v4/usage"
 				rejectWithRequest>
 			</iron-ajax>
 		`;
@@ -305,22 +306,10 @@ class usageList extends PolymerElement {
 		var grid = this;
 		var usage = document.body.querySelector('usekeeper-shell').shadowRoot.querySelector('usekeeper-usage-list');
 		var ajax = usage.shadowRoot.getElementById('getUsageAjax');
-		ajax.url = "usageManagement/v4/usage";
-		params.filters.forEach(function(filter, index) {
-			if(filter.path == "taxIncludedRatingAmount"
-					|| filter.path == "taxExcludedRatingAmount"
-					|| filter.path == "taxRate") {
-				ajax.url += '?'+ "ratedProductUsage." + filter.path + '=' + filter.value;
-			} else {
-				if(index == 0) {
-					if(filter.value) {
-						ajax.url += '?'+ filter.path + '=' + filter.value;
-					} else {
-						ajax.url;
-					}
-				} else {
-					ajax.url += '&'+ filter.path + '=' + filter.value;
-				}
+		ajax.params = {};
+		params.filters.forEach(function(filter) {
+			if(filter.value) {
+				ajax.params[filter.path] = filter.value;
 			}
 		});
 		if(!grid.size) {
