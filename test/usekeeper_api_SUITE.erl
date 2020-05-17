@@ -31,7 +31,7 @@
 		delete_user/0, delete_user/1,
 		add_usage_spec/0, add_usage_spec/1, delete_usage_spec/0,
 		delete_usage_spec/1,
-		add_usage/0, add_usage/1]).
+		add_usage/0, add_usage/1, query_usage/0, query_usage/1]).
 
 -include("usage.hrl").
 -include_lib("common_test/include/ct.hrl").
@@ -87,7 +87,8 @@ sequences() ->
 %%
 all() ->
 	[add_user2, add_user4, get_user, list_users, delete_user,
-			add_usage_spec, delete_usage_spec, add_usage].
+			add_usage_spec, delete_usage_spec,
+			add_usage, query_usage].
 
 %%---------------------------------------------------------------------
 %%  Test cases
@@ -204,7 +205,7 @@ delete_usage_spec(_Config) ->
 	end.
 
 add_usage() ->
-	[{userdata, [{doc, "Log a new Usage Event"}]}].
+	[{userdata, [{doc, "Log a new usage event"}]}].
 
 add_usage(_Config) ->
 	Usage = usekeeper_test_lib:voice_usage(),
@@ -228,6 +229,40 @@ add_usage(_Config) ->
 				false
 	end,
 	true = Find(Find, disk_log:chunk(usage, start)).
+
+query_usage() ->
+	[{userdata, [{doc, "Query usage events"}]}].
+
+query_usage(_Config) ->
+	F = fun F(0, Acc) ->
+					Acc;
+			F(N, Acc) ->
+				Date = usekeeper_rest:iso8601(erlang:system_time(millisecond)),
+				SpecId = integer_to_list(erlang:unique_integer([positive])),
+				TaxExcluded = rand:uniform(20),
+				TaxRate = rand:uniform(20),
+				TaxIncluded = TaxExcluded + ((TaxExcluded * TaxRate) div 100),
+				Rated = #{"taxIncludedRatingAmount" => TaxIncluded,
+						"taxExcludedRatingAmount" => TaxExcluded,
+						"usageRatingTag" => "Usage", "ratingAmountType" => "Total",
+						"taxRate" => TaxRate, "currencyCode" => "EUR",
+						"isBilled" => "false", "offerTariffType" => "Normal"},
+				Usage = #{"description" => "Voice call usage",
+						"date" => Date, "status" => "received",
+						"type" => "CloudCpuUsage",
+						"usageSpecification" => #{"id" => SpecId,
+								"name" => "Cloud CPU usage specification"},
+						"ratedProductUsage" => [Rated]},
+				{ok, {_TS, _N, U}} = usekeeper:add_usage(Usage),
+				F(N - 1, [U | Acc])
+	end,
+	Usages = F(rand:uniform(100), []),
+	#{"usageSpecification" := #{"id" := SpecId1},
+			"ratedProductUsage" := [#{"taxRate" := Rate}]}
+			= lists:nth(rand:uniform(length(Usages)), Usages),
+	MatchSpec = [{#{"usageSpecification" => #{"id" => SpecId1}}, [], ['$_']}],
+	{_, [{_, _, #{"ratedProductUsage" := [#{"taxRate" := Rate}]}}], 1}
+			= usekeeper:query_usage(start, undefined, [], MatchSpec, false).
 
 %%---------------------------------------------------------------------
 %%  Internal functions
