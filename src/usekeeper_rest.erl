@@ -23,6 +23,7 @@
 
 -export([date/1, etag/1, iso8601/1]).
 -export([parse_query/1, range/1, pointer/1, patch/2]).
+-export([millionths_in/1, millionths_out/1]).
 
 -include("usage.hrl").
 
@@ -221,6 +222,63 @@ parse_query1(Field, N, Acc) ->
 	Key = lists:sublist(Field, N - 1),
 	Value = lists:sublist(Field, N + 1, length(Field)),
 	[{Key, Value} | Acc].
+
+-type millionths() :: non_neg_integer().
+-spec millionths_in(In) -> Out
+	when
+		In :: string() | integer() | float(),
+		Out :: millionths().
+%% @doc Convert value from JSON to internal value.
+%%
+%% 	Internal representation is an integer value
+%% 	representing the number of units, where a unit
+%% 	is one millionth of a cent (1&#x000A2; = 1000000).
+%%
+millionths_in(In) when is_list(In) ->
+	case string:tokens(In, [$.]) of
+		[M] ->
+			list_to_integer(M) * 1000000;
+		[M, D] when length(D) =< 6 ->
+			D1 = list_to_integer(D ++ lists:duplicate(6 - length(D), $0)),
+			case list_to_integer(M) of
+				M1 when M1 < 0 ->
+					M1 * 1000000 - D1;
+				M1 ->
+					M1 * 1000000 + D1
+			end
+	end;
+millionths_in(In) when is_integer(In) ->
+	In * 1000000;
+millionths_in(In) when is_float(In) ->
+	millionths_in(float_to_list(In, [{decimals, 7}, compact])).
+
+-spec millionths_out(In) -> Out
+	when
+		In :: millionths(),
+		Out :: string().
+%% @doc Convert internal value to string() for JSON.
+%%
+%% 	Internal representation is an integer value
+%% 	representing the number of units, where a unit
+%% 	is one millionth of a cent (1&#x000A2; = 1000000).
+%%
+millionths_out(In) when is_integer(In), In < 0 ->
+	N1 = 0 - In,
+	M = N1 div 1000000,
+	D = N1 rem 1000000,
+	SD = integer_to_list(D),
+	S1 = [$-] ++ integer_to_list(M) ++ [$.]
+			++ lists:duplicate(6 - length(SD), $0) ++ SD,
+	S2 = string:strip(S1, right, $0),
+	string:strip(S2, right, $.);
+millionths_out(In) when is_integer(In) ->
+	M = In div 1000000,
+	D = In rem 1000000,
+	SD = integer_to_list(D),
+	S1 = integer_to_list(M) ++ [$.]
+			++ lists:duplicate(6 - length(SD), $0) ++ SD,
+	S2 = string:strip(S1, right, $0),
+	string:strip(S2, right, $.).
 
 %%----------------------------------------------------------------------
 %%  internal functions
