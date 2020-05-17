@@ -1,0 +1,54 @@
+name: Autotools Build
+on:
+  push:
+    branches: [ master ]
+defaults:
+  run:
+    working-directory: build
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        path: source
+    - name: Install zj
+      run: |
+         mkdir lib
+         git clone https://gitlab.com/zxq9/zj.git lib/zj
+         cd lib/zj
+         ./zmake
+      working-directory: ${{ github.workspace }}
+    - name: Maintainer operations
+      run: |
+        aclocal
+        autoheader
+        autoconf
+        automake --add-missing
+        mkdir ../build
+        echo "::set-env name=ERL_LIBS::../lib"
+      working-directory: source
+    - name: Install polymer
+      run: |
+        yarn global add polymer-cli
+        echo "::add-path::$(yarn global bin)"
+    - name: Configure
+      run: ../source/configure
+    - name: Build
+      run: make
+    # Artifacts do NOT work.
+    - uses: actions/upload-artifact@v2
+      with:
+        name: doc
+        path: build/doc/
+    - name: Build dialyzer PLT
+      run: dialyzer --build_plt --apps erts kernel stdlib mnesia inets syntax_tools xmerl zj
+    - name: Check
+      run: make check
+    # Artifacts do NOT work.
+    - uses: actions/upload-artifact@v2
+      with:
+        name: test
+        path: build/test/log/
+      if: always()
+
