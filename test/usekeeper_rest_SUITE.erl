@@ -26,9 +26,12 @@
 -export([init_per_testcase/2, end_per_testcase/2]).
 
 %% common_test test cases
--export([]).
-
--compile(export_all).
+-export([post_usage_specification/0, post_usage_specification/1,
+		get_usage_specifications/0, get_usage_specifications/1,
+		delete_usage_specification/0, delete_usage_specification/1,
+		patch_usage_specification/0, patch_usage_specification/1,
+		post_usage/0, post_usage/1, get_users/0, get_users/1,
+		get_usage/0, get_usage/1, query_usage/0, query_usage/1]).
 
 -include("usage.hrl").
 -include_lib("common_test/include/ct.hrl").
@@ -358,6 +361,9 @@ post_usage(Config) ->
 			"ratedProductUsage" := Rated}} = zj:decode(ResponseBody),
 	true = is_list(UsageChar),
 	true = is_list(Rated).
+
+get_usage() ->
+	[{userdata, [{doc, "GET Usage collection"}]}].
 
 get_usage(Config) ->
 	F = fun(_F, 0) ->
