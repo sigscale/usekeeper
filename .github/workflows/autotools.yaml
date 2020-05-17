@@ -26,7 +26,7 @@ jobs:
         autoconf
         automake --add-missing
         mkdir ../build
-        echo "::set-env name=ERL_LIBS::../lib"
+        echo "::set-env name=ERL_LIBS::${{ github.workspace }}/lib"
       working-directory: source
     - name: Install polymer
       run: |
@@ -36,7 +36,6 @@ jobs:
       run: ../source/configure
     - name: Build
       run: make
-    # Artifacts do NOT work.
     - uses: actions/upload-artifact@v2
       with:
         name: doc
@@ -45,7 +44,6 @@ jobs:
       run: dialyzer --build_plt --apps erts kernel stdlib mnesia inets syntax_tools xmerl zj
     - name: Check
       run: make check
-    # Artifacts do NOT work.
     - uses: actions/upload-artifact@v2
       with:
         name: test
