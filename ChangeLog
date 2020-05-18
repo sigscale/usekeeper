@@ -1,0 +1,12 @@
+2020-05-18  Vance Shipley <vances@sigscale.org
+
+	* href for rated product usage
+	* refactor usage data model
+	* handle all combinations of validfor
+	* better iso8601 routine
+	* export test cases explicitly
+	* monetary amount codec
+	* api test case for usage query
+	* absolute path for erl_libs
+	* github action for autotools build
+
