@@ -183,8 +183,8 @@ add_usage_spec(_Config) ->
 	true = is_list(Description),
 	true = is_integer(TS),
 	true = is_integer(N),
-	true = is_list(usekeeper_rest:iso8601(StartDate)),
-	true = is_list(usekeeper_rest:iso8601(EndDate)).
+	true = is_integer(usekeeper_rest:iso8601(StartDate)),
+	true = is_integer(usekeeper_rest:iso8601(EndDate)).
 
 delete_usage_spec() ->
 	[{userdata, [{doc, "Delete a specific usage specification"}]}].
@@ -208,7 +208,7 @@ add_usage() ->
 	[{userdata, [{doc, "Log a new usage event"}]}].
 
 add_usage(_Config) ->
-	Usage = usekeeper_test_lib:voice_usage(),
+	Usage = usekeeper_rest_res_usage:usage(usekeeper_test_lib:voice_usage()),
 	{ok, _UsageLog} = usekeeper:add_usage(Usage),
 	Fany = fun(E) when is_integer(element(1, E)),
 					is_integer(element(2, E)), is_map(element(3, E)) ->
@@ -244,24 +244,25 @@ query_usage(_Config) ->
 				TaxIncluded = TaxExcluded + ((TaxExcluded * TaxRate) div 100),
 				Rated = #{"taxIncludedRatingAmount" => TaxIncluded,
 						"taxExcludedRatingAmount" => TaxExcluded,
-						"usageRatingTag" => "Usage", "ratingAmountType" => "Total",
+						"usageRatingTag" => "usage", "ratingAmountType" => "total",
 						"taxRate" => TaxRate, "currencyCode" => "EUR",
-						"isBilled" => "false", "offerTariffType" => "Normal"},
+						"isBilled" => false, "offerTariffType" => "normal"},
 				Usage = #{"description" => "Voice call usage",
 						"date" => Date, "status" => "received",
-						"type" => "CloudCpuUsage",
+						"usageType" => "CloudCpuUsage",
 						"usageSpecification" => #{"id" => SpecId,
 								"name" => "Cloud CPU usage specification"},
+						"usageCharacteristic" => [#{"name" => "foo", "value" => 42}],
 						"ratedProductUsage" => [Rated]},
-				{ok, {_TS, _N, U}} = usekeeper:add_usage(Usage),
+				Usage1 = usekeeper_rest_res_usage:usage(Usage),
+				{ok, {_TS, _N, U}} = usekeeper:add_usage(Usage1),
 				F(N - 1, [U | Acc])
 	end,
 	Usages = F(rand:uniform(100), []),
-	#{"usageSpecification" := #{"id" := SpecId1},
-			"ratedProductUsage" := [#{"taxRate" := Rate}]}
+	#{usage_specification := #{id := SpecId1}, rated_usage := #{}}
 			= lists:nth(rand:uniform(length(Usages)), Usages),
-	MatchSpec = [{#{"usageSpecification" => #{"id" => SpecId1}}, [], ['$_']}],
-	{_, [{_, _, #{"ratedProductUsage" := [#{"taxRate" := Rate}]}}], 1}
+	MatchSpec = [{#{usage_specification => #{id => SpecId1}}, [], ['$_']}],
+	{_, [{_, _, #{rated_usage := #{}}}], 1}
 			= usekeeper:query_usage(start, undefined, [], MatchSpec, false).
 
 %%---------------------------------------------------------------------

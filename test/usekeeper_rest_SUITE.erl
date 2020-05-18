@@ -160,8 +160,8 @@ post_usage_specification(Config) ->
 			++ "\t\"@baseType\": \"" ++ BaseType ++ "\",\n"
 			++ "\t\"@type\": \"" ++ ClassType ++ "\",\n"
 			++ "\t\"validFor\": {\n"
-			++ "\t\t\"startDateTime\": \"2019-01-29T00:00\",\n"
-			++ "\t\t\"endDateTime\": \"2019-12-31T23:59\"\n"
+			++ "\t\t\"startDateTime\": \"2019-01-29T00:00Z\",\n"
+			++ "\t\t\"endDateTime\": \"2019-12-31T23:59Z\"\n"
 			++ "\t},\n"
 			++ "\t\"usageSpecCharacteristic\":[\n"
 			++ "\t\t\{\n"
@@ -296,7 +296,7 @@ patch_usage_specification(Config) ->
 	F = fun() ->
 			mnesia:read(use_spec, ID, read)
 	end,
-	{ok, US}= case mnesia:transaction(F) of
+	{ok, US} = case mnesia:transaction(F) of
 		{aborted, Reason} ->
 			{error, Reason};
 		{atomic, []} ->
@@ -315,8 +315,8 @@ post_usage(Config) ->
 	CollectionUrl = HostUrl ++ PathUsageSpec,
 	Description = random_string(25),
 	RequestBody = "{\n"
-			++ "\t\"type\": \"Voice\",\n"
-			++ "\t\"date\": \"2013-04-19T16:42:23\",\n"
+			++ "\t\"usageType\": \"Voice\",\n"
+			++ "\t\"date\": \"2013-04-19T16:42:23Z\",\n"
 			++ "\t\"description\": \"" ++ Description ++ "\",\n"
 			++ "\t\"status\": \"rated\",\n"
 			++ "\t\"usageSpecification\": {\n"
@@ -335,17 +335,17 @@ post_usage(Config) ->
 			++ "\t],\n"
 			++ "\t\"ratedProductUsage\": [\n"
 			++ "\t\t{\n"
-			++ "\t\t\"ratingDate\": \"2013-04-19T16:42:23\",\n"
-			++ "\t\t\"taxIncludedRatingAmount\": \"12\",\n"
-			++ "\t\t\"taxExcludedRatingAmount\": \"10\",\n"
+			++ "\t\t\"ratingDate\": \"2013-04-19T16:42:23Z\",\n"
+			++ "\t\t\"taxIncludedRatingAmount\": 1200000,\n"
+			++ "\t\t\"taxExcludedRatingAmount\": 1000000,\n"
 			++ "\t\t\"productRef\": \"ref\",\n"
-			++ "\t\t\"usageRatingTag\": \"Usage\",\n"
-			++ "\t\t\"ratingAmountType\": \"Total\",\n"
-			++ "\t\t\"taxRate\": \"20\",\n"
+			++ "\t\t\"usageRatingTag\": \"usage\",\n"
+			++ "\t\t\"ratingAmountType\": \"total\",\n"
+			++ "\t\t\"taxRate\": 200000,\n"
 			++ "\t\t\"currencyCode\": \"EUR\",\n"
-			++ "\t\t\"isBilled\": \"false\",\n"
-			++ "\t\t\"isTaxExempt\": \"false\",\n"
-			++ "\t\t\"offerTariffType\": \"Normal\"\n"
+			++ "\t\t\"isBilled\": false,\n"
+			++ "\t\t\"isTaxExempt\": false,\n"
+			++ "\t\t\"offerTariffType\": \"normal\"\n"
 			++ "\t\t}\n"
 			++ "\t]\n"
 			++ "}\n",
@@ -370,7 +370,8 @@ get_usage(Config) ->
 				ok;
 			(F, N) ->
 				Usage = usekeeper_test_lib:voice_usage(),
-				{ok, _UsageLog} = usekeeper:add_usage(Usage),
+				Usage1 = usekeeper_rest_res_usage:usage(Usage),
+				{ok, _UsageLog} = usekeeper:add_usage(Usage1),
 				F(F, N - 1)
 	end,
 	ok = F(F, 5),
@@ -402,33 +403,34 @@ query_usage(Config) ->
 				TaxIncluded = TaxExcluded + ((TaxExcluded * TaxRate) div 100),
 				Rated = #{"taxIncludedRatingAmount" => TaxIncluded,
 						"taxExcludedRatingAmount" => TaxExcluded,
-						"usageRatingTag" => "Usage", "ratingAmountType" => "Total",
+						"usageRatingTag" => "usage", "ratingAmountType" => "total",
 						"taxRate" => TaxRate, "currencyCode" => "EUR",
-						"isBilled" => "false", "offerTariffType" => "Normal"},
+						"isBilled" => false, "offerTariffType" => "normal"},
 				Usage = #{"description" => "Voice call usage",
 						"date" => Date, "status" => "received",
-						"type" => "CloudCpuUsage",
+						"usageType" => "CloudCpuUsage",
 						"usageSpecification" => #{"id" => SpecId,
 								"name" => "Cloud CPU usage specification"},
+						"usageCharacteristic" => [],
 						"ratedProductUsage" => [Rated]},
-				{ok, {_TS, _N, U}} = usekeeper:add_usage(Usage),
+				Usage1 = usekeeper_rest_res_usage:usage(Usage),
+				{ok, {_TS, _N, U}} = usekeeper:add_usage(Usage1),
 				F(N - 1, [U | Acc])
 	end,
 	Usages = F(rand:uniform(100), []),
-	#{"usageSpecification" := #{"id" := Id},
-			"ratedProductUsage" := [#{"taxRate" := Rate}]}
-			= lists:nth(rand:uniform(length(Usages)), Usages),
+	#{usage_specification := #{id := Id},
+			rated_usage := _} = lists:nth(rand:uniform(length(Usages)), Usages),
 	HostUrl = ?config(host_url, Config),
-	PathUsage = ?PathUsage ++ "usage?",
+	PathUsage = ?PathUsage ++ "usage",
+	Query = "?usageSpecification.id=" ++ Id,
 	Accept = {"accept", "application/json"},
-	Query = "usageSpecification.id=" ++ Id ++ "&ratedProductUsage.taxRate=" ++ integer_to_list(Rate),
 	Request = {HostUrl ++ PathUsage ++ Query, [Accept, auth_header()]},
 	{ok, Result} = httpc:request(get, Request, [], []),
 	{{"HTTP/1.1", 200, _OK}, Headers, ResponseBody} = Result,
 	{_, "application/json"} = lists:keyfind("content-type", 1, Headers),
 	{ok, UsageList} = zj:decode(ResponseBody),
 	[#{"usageSpecification" := #{"id" := Id},
-			"ratedProductUsage" := [#{"taxRate" := Rate}]}] = UsageList.
+			"ratedProductUsage" := [_]}] = UsageList.
 
 %%---------------------------------------------------------------------
 %%  Internal functions
@@ -456,10 +458,11 @@ auth_header() ->
 	{"authorization", basic_auth()}.
 
 is_usage_spec(#{"id" := Id, "name" := Name, "description" := Description,
-		"validFor" := #{"startDateTime" := StartTime, "endDateTime" := EndTime},
+		% "validFor" := #{"startDateTime" := StartTime, "endDateTime" := EndTime},
 		"usageSpecCharacteristic" := UsageSpecChars})
 		when is_list(Id), is_list(Name), is_list(Description),
-		is_list(StartTime), is_list(EndTime), is_list(UsageSpecChars) ->
+		% is_list(StartTime), is_list(EndTime),
+		is_list(UsageSpecChars) ->
 	true;
 is_usage_spec(_U) ->
 	false.
@@ -468,5 +471,5 @@ is_usage(#{"usageCharacteristic" := UsageChars,
 		"ratedProductUsage" := Rated}) when is_list(UsageChars),
 		is_list(Rated) ->
 	true;
-is_usage(_) ->
+is_usage(_U) ->
 	false.
