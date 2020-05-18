@@ -1,0 +1,18 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '--tag=asia.gcr.io/$PROJECT_ID/usekeeper:1.1.0-1'
+  - '.'
+  id: '1.1.0-1'
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '--tag=asia.gcr.io/$PROJECT_ID/usekeeper:latest'
+  - '.'
+  wait_for: ['1.1.0-1']
+  id: 'latest'
+images:
+- 'asia.gcr.io/$PROJECT_ID/usekeeper:latest'
+- 'asia.gcr.io/$PROJECT_ID/usekeeper:1.1.0-1'
+
