@@ -263,26 +263,47 @@ usage_specification([base_type | T], #use_spec{base_type = Type} = R, Acc)
 usage_specification([base_type | T], #{"@baseType" := Type} = M, Acc)
 		when is_list(Type) ->
 	usage_specification(T, M, Acc#use_spec{base_type = Type});
-usage_specification([start_date | T], #use_spec{start_date = StartDate} = R,
-		Acc) when is_integer(StartDate) ->
+usage_specification([start_date | T],
+		#use_spec{start_date = StartDate, end_date = undefined} = R, Acc)
+		when is_integer(StartDate)->
 	ValidFor = #{"startDateTime" => usekeeper_rest:iso8601(StartDate)},
 	usage_specification(T, R, Acc#{"validFor" => ValidFor});
 usage_specification([start_date | T],
-		#{"validFor" := #{"startDateTime" := Start}} = M, Acc)
-		when is_list(Start) ->
-	usage_specification(T, M, Acc#use_spec{start_date = usekeeper_rest:iso8601(Start)});
-usage_specification([end_date | T], #use_spec{end_date = End} = R,
-		#{"validFor" := ValidFor} = Acc) when is_integer(End) ->
-	NewValidFor = ValidFor#{"endDateTime" => usekeeper_rest:iso8601(End)},
-	usage_specification(T, R, Acc#{"validFor" := NewValidFor});
-usage_specification([end_date | T], #use_spec{end_date = End} = R, Acc)
-		when is_integer(End) ->
-	ValidFor = #{"endDateTime" => usekeeper_rest:iso8601(End)},
-	usage_specification(T, R, Acc#{"validFor" := ValidFor});
-usage_specification([end_date | T],
-		#{"validFor" := #{"endDateTime" := End}} = M, Acc)
-		when is_list(End) ->
-	usage_specification(T, M, Acc#use_spec{end_date = usekeeper_rest:iso8601(End)});
+		#{"startDateTime" := StartDate} = R, Acc)
+		when is_list(StartDate), is_map_key("endDateTime", R) == false ->
+	Acc1 = Acc#use_spec{start_date = usekeeper_rest:iso8601(StartDate)},
+	usage_specification(T, R, Acc1);
+usage_specification([start_date | T],
+		#use_spec{start_date = undefined, end_date = EndDate} = R, Acc)
+		when is_integer(EndDate) ->
+	ValidFor = #{"endDateTime" => usekeeper_rest:iso8601(EndDate)},
+	usage_specification(T, R, Acc#{"validFor" => ValidFor});
+usage_specification([start_date | T],
+		#{"endDateTime" := EndDate} = R, Acc)
+		when is_map_key("startDateTime", R) == false, is_list(EndDate) ->
+	Acc1 = Acc#use_spec{end_date = usekeeper_rest:iso8601(EndDate)},
+	usage_specification(T, R, Acc1);
+usage_specification([start_date | T],
+		#use_spec{start_date = StartDate, end_date = EndDate} = R, Acc)
+		when is_integer(StartDate), is_integer(EndDate) ->
+	ValidFor = #{"startDateTime" => usekeeper_rest:iso8601(StartDate),
+			"endDateTime" => usekeeper_rest:iso8601(EndDate)},
+	usage_specification(T, R, Acc#{"validFor" => ValidFor});
+usage_specification([start_date | T],
+		#{"startDateTime" := StartDate, "endDateTime" := EndDate} = R, Acc)
+		when is_list(StartDate), is_list(EndDate) ->
+	Acc1 = Acc#use_spec{start_date = usekeeper_rest:iso8601(StartDate),
+			end_date = usekeeper_rest:iso8601(EndDate)},
+	usage_specification(T, R, Acc1);
+usage_specification([start_date | T],
+		#use_spec{start_date = undefined, end_date = undefined} = R, Acc) ->
+	usage_specification(T, R, Acc);
+usage_specification([start_date | T], #{} = R, Acc)
+		when is_map_key("startDateTime", R) == false,
+		is_map_key("endDateTime", R) == false ->
+	usage_specification(T, R, Acc);
+usage_specification([end_date | T], R, Acc) ->
+	usage_specification(T, R, Acc);
 usage_specification([characteristic | T],
 		#use_spec{characteristic = UsageSpecChar} = R, Acc)
 		when is_map(UsageSpecChar) ->
