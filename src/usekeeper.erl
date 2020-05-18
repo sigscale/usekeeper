@@ -296,14 +296,36 @@ query3(Cont, Objects, Total, []) ->
 		Result :: {ok, UsageLog} | {error, Reason},
 		UsageLog :: usage_log(),
 		Reason :: term().
-%% @doc Log a new Usage Event.
-add_usage(#{"date" := Date, "type" := Type} = Usage)
-		when is_list(Date), is_list(Type) ->
-	TS = erlang:system_time(millisecond),
-	N = erlang:unique_integer([positive]),
-	ID = integer_to_list(TS) ++ integer_to_list(N),
+%% @doc Log a Usage event.
+add_usage(#{date := Date, usage_type := Type,
+		rated_usage := RatedUsage} = Usage)
+		when is_map_key(id, Usage) == false,
+		is_map_key(href, Usage) == false,
+		is_integer(Date), is_list(Type),
+		is_map(RatedUsage) ->
+	{ID, {TS, N}} = unique(),
+	Href1 = "/usageManagement/v4/usage/" ++ ID,
+	Href2 = Href1 ++ "/ratedProductUsage/",
+	F = fun(Id, R, Acc) ->
+			Acc#{Id => R#{href => Href2 ++ Id}}
+	end,
+	Usage1 = Usage#{id => ID, href => Href1,
+			rated_usage => maps:fold(F, #{}, RatedUsage)},
+	UsageLog = {TS, N, Usage1},
+	case disk_log:log(usage, UsageLog) of
+		ok ->
+			{ok, UsageLog};
+		{error, Reason} ->
+			{error, Reason}
+	end;
+add_usage(#{date := Date, usage_type := Type} = Usage)
+		when is_map_key(id, Usage) == false,
+		is_map_key(href, Usage) == false,
+		is_integer(Date), is_list(Type) ->
+	{ID, {TS, N}} = unique(),
 	Href = "/usageManagement/v4/usage/" ++ ID,
-	UsageLog = {TS, N, Usage#{"id" => ID, "href" => Href}},
+	Usage1 = Usage#{id => ID, href => Href},
+	UsageLog = {TS, N, Usage1},
 	case disk_log:log(usage, UsageLog) of
 		ok ->
 			{ok, UsageLog};
