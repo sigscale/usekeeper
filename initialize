@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# SigScale Global Inc.
+#
+# Initialize mnesia tables for OCS.
+#
+
+if [ -z "$NODENAME" ]
+then
+   NODENAME=usekeeper
+fi
+
+if [ -z "$ROOTDIR" ]
+then
+   ROOTDIR=/usr/lib/erlang
+fi
+
+if [ -z "$RELDIR" ]
+then
+   RELDIR=$ROOTDIR/releases
+fi
+START_ERL_DATA=$RELDIR/start_erl.data
+
+UK_VERSION=`sed 's/^.* //' $RELDIR/start_erl.data`
+
+erl -sname $NODENAME -config $RELDIR/$UK_VERSION/sys \
+		-s usekeeper_app install -s init stop
+

@@ -5,7 +5,7 @@
 ##
 ## Boilerplate:  standard boilerplate code
 ##
-AC_INIT([usekeeper], [1.0.0], [issues@usekeeper.org])
+AC_INIT([usekeeper], [1.1.0], [issues@usekeeper.org])
 AC_COPYRIGHT([Copyright (c) 2019 SigScale Global Inc.])
 AC_PREREQ(2.63)
 AC_CONFIG_SRCDIR([src/usekeeper_app.erl])
