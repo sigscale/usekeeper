@@ -284,7 +284,7 @@ patch_usage_specification(Config) ->
 			++ "]\n",
 	HostUrl = ?config(host_url, Config),
 	CollectionUrl = HostUrl ++ ?PathUsage ++ "usageSpecification/" ++ Id,
-	Accept = "application/json",
+	Accept = {"accept", "application/json"},
 	ContentType = "application/merge-patch+json",
 	Request = {CollectionUrl, [Accept, auth_header()], ContentType, RequestBody},
 	{ok, Result} = httpc:request(patch, Request, [], []),
